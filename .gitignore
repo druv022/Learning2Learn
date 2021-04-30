@@ -1,0 +1,6 @@
+.vscode/launch.json
+.vscode/settings.json
+cache/*
+results/*
+**/__pycache__
+trash/*

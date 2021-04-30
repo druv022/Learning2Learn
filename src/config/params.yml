@@ -1,0 +1,17 @@
+# paths
+train: "/media/druv022/Data2/Research/NLP/Data/aclImdb/train"
+test: "/media/druv022/Data2/Research/NLP/Data/aclImdb/test"
+val: ""
+
+# training
+modelname: "bert-base-uncased"
+lr: 0.00005
+batch_size: 4
+epoch: 3
+split: 0.2
+shuffle: true
+
+# tokenizer
+padding: true
+truncation: true
+  
