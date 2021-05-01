@@ -4,3 +4,4 @@ cache/*
 results/*
 **/__pycache__
 trash/*
+logs/*
