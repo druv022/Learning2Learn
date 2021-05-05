@@ -1,8 +1,5 @@
 # paths
-train: "/media/druv022/Data2/Research/NLP/Data/aclImdb/train"
-test: "/media/druv022/Data2/Research/NLP/Data/aclImdb/test"
-val: ""
-
+data: "/Users/yadavv/Documents/reptile/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00005

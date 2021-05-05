@@ -5,51 +5,57 @@ from tqdm import tqdm
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from sklearn.model_selection import train_test_split
-from transformers import BertTokenizerFast, AdamW
-
-from src.model.bertclassifier2 import BertClassification
+from torch.utils.tensorboard import SummaryWriter
+from transformers import AdamW, get_linear_schedule_with_warmup
+from src.model.bertclassifier import BertClassification
 from src.data.IMDB import IMDBDataset as Dataset
 from src.data.IMDB import read_imdb_split
 from src.utils.preprocess import tokenize
 from test import test
+import torch.nn as nn
 
-CUDA_LAUNCH_BLOCKING=1
-
-def train(config, model, train_texts, train_labels, val_texts, val_labels, device=torch.device("cpu")):
+def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
+    ##writer=SummaryWriter()
+    train_text=train_df['lext'].tolist()
     # tokenize
-    train_encodings = tokenize(config, train_texts)
+    train_encodings = tokenize(config,train_text)
     # prepare dataset and data loader
-    train_dataset = Dataset(train_encodings, train_labels)
+    train_dataset = Dataset(train_encodings, train_df)
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"], \
                                 num_workers=config["num_workers"], pin_memory=config["pin_memory"])
 
-    optim = AdamW(model.parameters(), lr=config["lr"])
+    optim1 = AdamW(
+        model.parameters(), lr=2e-5, correct_bias=False)
+    optimizer_ft = optim1
+    ##weights=torch.FloatTensor([0.3,1]).cuda()
+    loss = nn.CrossEntropyLoss()
+    training_steps = int((config['epochs'] * train_df.shape[0]) / config['batch_size'])
+    num_warmup_steps = 0  ##int(training_steps*0.1)
+    scheduler = get_linear_schedule_with_warmup(optimizer_ft, num_warmup_steps=num_warmup_steps,
+                                                num_training_steps=training_steps)
+    steps = 0
+    model.train()
+    data_loss=0
+    while (steps < training_steps):
+        for attention, input_id, token_id, label in tqdm(train_loader):
+            if (device == "cuda:0"):
+                attention = attention.cuda()
+                input_id = input_id.cuda()
+                token_id = token_id.cuda()
+                label = label.cuda()
+            logits = model.forward(attention, input_id, token_id)
+            ##class_cat=class_cat.unsqueeze(1)
+            model_loss = loss(logits, label)
+            print(model_loss)
+            optimizer_ft.zero_grad()
+            model_loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            optimizer_ft.step()
+            data_loss = data_loss + model_loss.item()
+            if (steps % 30 == 0):
+                ##writer.add_scalar("loss", data_loss / 30, steps)
+                data_loss = 0
 
-    print("Begin training:...")
-    for epoch in range(config["epochs"]):
-        # set model to train
-        model.train()
-
-        epoch_loss = []
-        for batch in tqdm(train_loader):
-            optim.zero_grad()
-            input_ids = batch['input_ids'].to(device)
-            attention_mask = batch['attention_mask'].to(device)
-            labels = batch['labels'].to(device)
-            outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
-            loss = outputs[0]
-            loss.backward()
-            optim.step()
-
-            epoch_loss.append(loss.item())
-        
-        epoch_loss = np.mean(epoch_loss)
-        print(f"Epoch:{epoch}\tEpoch_loss: {epoch_loss}")
-        # TODO: add all to tensorboardx
-
-        # call validation on the model
-        test(model, config, val_texts, val_labels, device)
 
 
 
@@ -59,12 +65,11 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # read 
-    train_texts, train_labels = read_imdb_split(config["train"])
+    train_df,val_df,test_df = read_imdb_split(config["data"])
     # train test split
-    train_texts, val_texts, train_labels, val_labels = train_test_split(train_texts, train_labels, test_size=config["split"])
-
+    num_labels=len(train_df.label.unique())
     # build model
-    model = BertClassification(config["modelname"])
+    model = BertClassification(config,num_labels=num_labels)
     model.to(device)
     # train
-    train(config, model, train_texts, train_labels, val_texts, val_labels, device)
+    train(config, model, train_df,val_df,test_df, device)
