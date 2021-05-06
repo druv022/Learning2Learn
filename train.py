@@ -56,8 +56,9 @@ def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
                 writer.add_scalar("loss", data_loss / 10, steps)
                 data_loss = 0
             if(steps>0 and steps%100==0):
-                acc=test(model,config,val_df)
+                acc,report=test(model,config,val_df)
                 writer.add_scalar("accuracy", acc, steps)
+                writer.add_text("classification_report",str(report),steps)
                 model.train()
             steps=steps+1
 

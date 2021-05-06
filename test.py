@@ -30,7 +30,7 @@ def test(model, config, data_df, device=torch.device("cuda")):
         pred_labels.extend(indices.cpu().tolist())
         target_labels.extend(labels.cpu().tolist())
 
-    return accuracy_score(target_labels, pred_labels)
+    return accuracy_score(target_labels, pred_labels),classification_report(target_labels, pred_labels)
     ##print(classification_report(target_labels, pred_labels))
 
 
