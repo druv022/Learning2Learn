@@ -58,6 +58,7 @@ def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
             if(steps%30==0):
                 acc=test(model,config,val_df,"cpu")
                 writer.add_scalar("accuracy", acc, steps)
+                model.train()
 
 
 
@@ -65,7 +66,7 @@ def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
 if __name__ == "__main__":
     with open('./src/config/params.yml', 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-
+    print("Done reading data")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # read 
     train_df,val_df,test_df = read_imdb_split(config["data"])
