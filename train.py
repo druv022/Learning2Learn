@@ -38,7 +38,7 @@ def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
     data_loss=0
     while (steps < training_steps):
         for attention, input_id, token_id, label in tqdm(train_loader):
-            if (device == "cuda:0"):
+            if (torch.cuda.is_available()):
                 attention = attention.cuda()
                 input_id = input_id.cuda()
                 token_id = token_id.cuda()
