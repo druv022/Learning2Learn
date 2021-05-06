@@ -8,7 +8,7 @@ from src.utils.preprocess import tokenize
 from src.data.IMDB import IMDBDataset as Dataset
 
 
-def test(model, config, data_df, device=torch.device("cpu")):
+def test(model, config, data_df, device=torch.device("cuda")):
     model.eval()
     data_text = data_df['lext'].tolist()
     data_encodings = tokenize(config, data_text)
