@@ -1,5 +1,5 @@
 # paths
-data: "/Users/yadavv/Documents/reptile/full_data.csv"
+data: "emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00005
