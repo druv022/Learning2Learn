@@ -15,7 +15,7 @@ from test import test
 import torch.nn as nn
 
 def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
-    ##writer=SummaryWriter()
+    writer=SummaryWriter()
     train_text=train_df['lext'].tolist()
     # tokenize
     train_encodings = tokenize(config,train_text)
@@ -46,15 +46,18 @@ def train(config, model, train_df,val_df,test_df, device=torch.device("cpu")):
             logits = model.forward(attention, input_id, token_id)
             ##class_cat=class_cat.unsqueeze(1)
             model_loss = loss(logits, label)
-            print(model_loss)
+            ##print(model_loss)
             optimizer_ft.zero_grad()
             model_loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer_ft.step()
             data_loss = data_loss + model_loss.item()
-            if (steps % 30 == 0):
-                ##writer.add_scalar("loss", data_loss / 30, steps)
+            if (steps % 10 == 0):
+                writer.add_scalar("loss", data_loss / 10, steps)
                 data_loss = 0
+            if(steps%30==0):
+                acc=test(model,config,val_df,"cpu")
+                writer.add_scalar("accuracy", acc, steps)
 
 
 

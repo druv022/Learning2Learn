@@ -14,6 +14,5 @@ class BertClassification(nn.Module):
         output= self.bert(input_ids=input, attention_mask=attention, token_type_ids=tokens)
         last_state = torch.mean(output.last_hidden_state, dim=1)
         drop_output = self.dropout(last_state)
-        print(drop_output.shape)
         logits = self.classifier(drop_output)
         return logits
