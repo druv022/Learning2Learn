@@ -43,6 +43,7 @@ def train(config, model, train_texts, train_labels, val_texts, val_labels, devic
             optim.step()
 
             epoch_loss.append(loss.item())
+            print(loss.item())
         
         epoch_loss = np.mean(epoch_loss)
         print(f"Epoch:{epoch}\tEpoch_loss: {epoch_loss}")
