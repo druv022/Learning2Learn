@@ -1,12 +1,9 @@
 # paths
-train: "/media/druv022/Data2/Research/NLP/Data/aclImdb/train"
-test: "/media/druv022/Data2/Research/NLP/Data/aclImdb/test"
-val: ""
-
+data: "emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00005
-batch_size: 4
+batch_size: 32
 epochs: 3
 split: 0.2
 shuffle: true
@@ -19,8 +16,8 @@ truncation: true
 
 #-------------------------------
 output_dir: "./results"
-per_device_train_batch_size: 4  
-per_device_eval_batch_size: 4   
+per_device_train_batch_size: 32
+per_device_eval_batch_size: 16
 warmup_steps: 500                
 weight_decay: 0.01             
 logging_dir: './logs'            

@@ -5,3 +5,4 @@ results/*
 **/__pycache__
 trash/*
 logs/*
+test_bertforclassification_sample.py
