@@ -12,7 +12,7 @@ class IMDBDataset(Dataset):
 
     def __getitem__(self, idx):
         data=self.pdf.iloc[idx]
-        label=data['label']
+        label=data['meta_label']
         encoding=self.encodings[idx]
         ids=torch.tensor(encoding.ids)
         attention=torch.tensor(encoding.attention_mask)
@@ -27,7 +27,7 @@ class IMDBDataset(Dataset):
 def read_imdb_split(split_dir):
     print("Reading dataset")
     df=pd.read_csv(split_dir)
-    train_df=df.loc[df['data_for']=='train']
-    val_df=df.loc[df['data_for']=='validation']
-    test_df = df.loc[df['data_for'] == 'test']
-    return train_df,val_df,test_df
+    ##train_df=df.loc[df['data_for']=='train']
+    ##val_df=df.loc[df['data_for']=='validation']
+    ##test_df = df.loc[df['data_for'] == 'test']
+    return df
