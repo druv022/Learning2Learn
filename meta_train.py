@@ -39,7 +39,7 @@ def meta_train(config, model,df, device=torch.device("cpu")):
         model.train()
         data_loss = 0
         train_dataset = Dataset(train_encodings, task_data)
-        train_loader = DataLoader(train_dataset, batch_size=5, shuffle=config["shuffle"], \
+        train_loader = DataLoader(train_dataset, batch_size=config["batchsize"], shuffle=config["shuffle"], \
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
         for attention, input_id, token_id, label in tqdm(train_loader):
             if (torch.cuda.is_available()):
