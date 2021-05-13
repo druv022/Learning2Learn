@@ -17,6 +17,7 @@ import torch.nn as nn
 import random
 from copy import deepcopy
 from meta_test import meta_test_train
+from sklearn.utils import shuffle
 
 def meta_train(config, model,df, device=torch.device("cpu")):
     writer=SummaryWriter()
@@ -24,6 +25,7 @@ def meta_train(config, model,df, device=torch.device("cpu")):
     outerstepsize0 = 0.1
     niterations=50000
     task_steps={1:0,2:0,3:0,4:0,5:0}
+    df=shuffle(df)
     total_steps=0
     for iteration in range(0,niterations):
         weights_before = deepcopy(model.state_dict())
