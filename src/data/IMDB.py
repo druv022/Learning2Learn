@@ -25,7 +25,7 @@ class IMDBDataset(Dataset):
 
 
 def read_imdb_split(split_dir):
-    print("Reading dataset")
+    print("Reading dataset 1")
     df=pd.read_csv(split_dir)
     ##train_df=df.loc[df['data_for']=='train']
     ##val_df=df.loc[df['data_for']=='validation']
