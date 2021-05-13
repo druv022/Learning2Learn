@@ -1,4 +1,4 @@
-FROM docker-rcods-projects-local.rt.artifactory.tio.systems/dl_base/dlbase:1
+FROM dlbase
 
 
 COPY . /app
