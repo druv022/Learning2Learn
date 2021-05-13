@@ -16,13 +16,15 @@ import torch.optim as optim
 import torch.nn as nn
 import random
 from copy import deepcopy
+from meta_test import meta_test_train
 
 def meta_train(config, model,df, device=torch.device("cpu")):
     writer=SummaryWriter()
     loss = nn.CrossEntropyLoss()
     outerstepsize0 = 0.1
-    niterations=10000
-    task_steps={1:0,2:0,3:0,4:0}
+    niterations=50000
+    task_steps={1:0,2:0,3:0,4:0,5:0}
+    total_steps=0
     for iteration in range(0,niterations):
         weights_before = deepcopy(model.state_dict())
         sample_task=random.randint(1,4)
@@ -34,7 +36,6 @@ def meta_train(config, model,df, device=torch.device("cpu")):
             {'params': model.bert.parameters()},
             {'params': model.classifier.parameters(), 'lr': 2e-2}
         ], lr=1e-5)
-        training_steps = 20
         steps = 0
         model.train()
         data_loss = 0
@@ -56,10 +57,13 @@ def meta_train(config, model,df, device=torch.device("cpu")):
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer_ft.step()
             data_loss = data_loss + model_loss.item()
-            if (steps > 0 and steps % 15 == 0):
-                print(data_loss / 15)
-                writer.add_scalar(f'loss/task'+str(sample_task), data_loss/15, task_steps[sample_task])
+            if (steps > 0 and steps % config["loss_plot_step"] == 0):
+                print(data_loss / config["loss_plot_step"])
+                writer.add_scalar(f'loss/task'+str(sample_task), data_loss/config["loss_plot_step"], task_steps[sample_task])
                 data_loss = 0
+            if(steps>0 and total_steps%config["acc_plot_step"]==0):
+                meta_test_train(config,model,df,writer,iteration,niterations,task_steps,device)
+            total_steps=total_steps+1
             steps = steps + 1
             task_steps[sample_task]=task_steps[sample_task]+1
         weights_after = model.state_dict()
@@ -67,12 +71,6 @@ def meta_train(config, model,df, device=torch.device("cpu")):
         model.load_state_dict({name:
                                    weights_before[name] + (weights_after[name] - weights_before[name]) * outerstepsize
                                for name in weights_before})
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
