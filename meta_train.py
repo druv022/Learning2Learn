@@ -61,7 +61,7 @@ def meta_train(config, model,df, device=torch.device("cpu")):
                 print(data_loss / config["loss_plot_step"])
                 writer.add_scalar(f'loss/task'+str(sample_task), data_loss/config["loss_plot_step"], task_steps[sample_task])
                 data_loss = 0
-            if(steps>0 and total_steps%config["acc_plot_step"]==0):
+            if(total_steps>0 and total_steps%config["acc_plot_step"]==0):
                 meta_test_train(config,model,df,writer,iteration,niterations,task_steps,device)
             total_steps=total_steps+1
             steps = steps + 1
