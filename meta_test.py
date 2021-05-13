@@ -76,9 +76,9 @@ def meta_test_train(config, model,df,writer,iteration,niterations,task_steps,dev
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer_ft.step()
         data_loss = data_loss + model_loss.item()
-        if (steps > 0 and steps % config["loss_plot_step"] == 0):
-            print(data_loss / config["loss_plot_step"])
-            writer.add_scalar(f'loss/task' + str(sample_task), data_loss / config["loss_plot_step"], task_steps[sample_task])
+        if (steps > 0 and steps % config["loss_plot_test_step"] == 0):
+            print(data_loss / config["loss_plot_test_step"])
+            writer.add_scalar(f'loss/task' + str(sample_task), data_loss / config["loss_plot_test_step"], task_steps[sample_task])
             data_loss = 0
         steps = steps + 1
         task_steps[sample_task] = task_steps[sample_task] + 1
