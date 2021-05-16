@@ -14,7 +14,8 @@ from src.data.IMDB import read_imdb_split
 from src.utils.preprocess import tokenize
 from test import test
 
-CUDA_LAUNCH_BLOCKING=1
+CUDA_LAUNCH_BLOCKING = 1
+
 
 def train(config, model, train_texts, train_labels, val_texts, val_labels, device=torch.device("cpu")):
     # tokenize
@@ -36,7 +37,7 @@ def train(config, model, train_texts, train_labels, val_texts, val_labels, devic
         logging_dir=config["logging_dir"],
         logging_steps=config["logging_steps"]
     )
-    
+
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -46,18 +47,21 @@ def train(config, model, train_texts, train_labels, val_texts, val_labels, devic
 
     trainer.train()
 
+
 if __name__ == "__main__":
     with open('./src/config/params.yml', 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # read 
+    # read
     train_texts, train_labels = read_imdb_split(config["train"])
     # train test split
-    train_texts, val_texts, train_labels, val_labels = train_test_split(train_texts, train_labels, test_size=config["split"])
+    train_texts, val_texts, train_labels, val_labels = train_test_split(
+        train_texts, train_labels, test_size=config["split"])
 
     # build model
     model = BertClassification(config["modelname"])
     model.to(device)
     # train
-    train(config, model, train_texts, train_labels, val_texts, val_labels, device)
+    train(config, model, train_texts, train_labels,
+          val_texts, val_labels, device)

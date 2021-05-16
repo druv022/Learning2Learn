@@ -1,6 +1,7 @@
 import torch
 from torch import nn
-from transformers import BertTokenizerFast, BertModel, BertConfig,BertPreTrainedModel, BertForSequenceClassification, Trainer, TrainingArguments, AdamW
+from transformers import BertTokenizerFast, BertModel, BertConfig, BertPreTrainedModel, BertForSequenceClassification, Trainer, TrainingArguments, AdamW
+
 
 class BertClassification(nn.Module):
     def __init__(self, config, num_labels=2, hidden_dropout_prob=0.1, hidden_size=768):
@@ -11,10 +12,11 @@ class BertClassification(nn.Module):
         self.config = BertConfig()
         self.bert = BertModel(self.config)
         self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
-        self.linear1 = nn.Linear(self.config.hidden_size, self.config.hidden_size)
-        self.linear2 = nn.Linear(self.config.hidden_size, self.config.num_labels)
-        self.activation = nn.Tanh() 
-
+        self.linear1 = nn.Linear(
+            self.config.hidden_size, self.config.hidden_size)
+        self.linear2 = nn.Linear(
+            self.config.hidden_size, self.config.num_labels)
+        self.activation = nn.Tanh()
 
     def forward(
         self,
@@ -55,8 +57,9 @@ class BertClassification(nn.Module):
                 loss = loss_fct(logits.view(-1), labels.view(-1))
             else:
                 loss_fct = nn.CrossEntropyLoss()
-                loss = loss_fct(logits.view(-1, self.num_labels), labels.view(-1))
-        
+                loss = loss_fct(
+                    logits.view(-1, self.num_labels), labels.view(-1))
+
         if not return_dict:
             output = (logits, ) + outputs[2:]
             return ((loss,) + output) if loss is not None else output
