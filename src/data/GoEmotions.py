@@ -28,7 +28,4 @@ class GoEmotionsDataset(Dataset):
 def read_goemotions_split(split_dir):
     print("Reading dataset")
     df = pd.read_csv(split_dir)
-    train_df = df.loc[df['data_for'] == 'train']
-    val_df = df.loc[df['data_for'] == 'validation']
-    test_df = df.loc[df['data_for'] == 'test']
-    return train_df, val_df, test_df
+    return df
