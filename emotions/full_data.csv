@@ -1,4 +1,4 @@
-,label,lext,data_for,meta_label,task_id
+,label,text,data_for,meta_label,task_id
 87,9,"He was off by 5 minutes, not impressed. ",train,0,1
 120,9,We thought he was getting better but then he turned himself around.,train,0,1
 135,9,"Just an employee, just stressed that it takes so long to save 10k for example and even that is nothing ! Should of brought more bitcoins",train,0,1

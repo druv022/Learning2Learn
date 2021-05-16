@@ -17,7 +17,7 @@ import torch.nn as nn
 
 def train(config, model, train_df, val_df, test_df, device=torch.device("cpu")):
     writer = SummaryWriter()
-    train_text = train_df['lext'].tolist()
+    train_text = train_df['text'].tolist()
     # tokenize
     train_encodings = tokenize(config, train_text)
     # prepare dataset and data loader

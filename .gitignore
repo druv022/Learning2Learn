@@ -6,3 +6,4 @@ results/*
 trash/*
 logs/*
 test_bertforclassification_sample.py
+**/runs/*

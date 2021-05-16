@@ -13,7 +13,7 @@ class GoEmotionsDataset(Dataset):
 
     def __getitem__(self, idx):
         data = self.pdf.iloc[idx]
-        label = data['label']
+        label = data['meta_label']
         encoding = self.encodings[idx]
         ids = torch.tensor(encoding.ids)
         attention = torch.tensor(encoding.attention_mask)

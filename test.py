@@ -10,7 +10,7 @@ from src.data.GoEmotions import GoEmotionsDataset as Dataset
 
 def test(model, config, data_df, device=torch.device("cuda")):
     model.eval()
-    data_text = data_df['lext'].tolist()
+    data_text = data_df['text'].tolist()
     data_encodings = tokenize(config, data_text)
 
     test_dataset = Dataset(data_encodings, data_df)
