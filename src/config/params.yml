@@ -3,7 +3,10 @@ data: "emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00005
-batch_size: 16
+batch_size: 32
+loss_plot_step: 15
+loss_plot_test_step: 12
+acc_plot_step: 35
 epochs: 3
 split: 0.2
 shuffle: true
@@ -16,8 +19,8 @@ truncation: true
 
 #-------------------------------
 output_dir: "./results"
-per_device_train_batch_size: 32
-per_device_eval_batch_size: 16
+per_device_train_batch_size: 5
+per_device_eval_batch_size: 5
 warmup_steps: 500                
 weight_decay: 0.01             
 logging_dir: './logs'            
