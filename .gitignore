@@ -7,3 +7,4 @@ trash/*
 logs/*
 test_bertforclassification_sample.py
 **/runs/*
+src/resources/ag_news

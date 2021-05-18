@@ -1,5 +1,6 @@
 from pathlib import Path
 import yaml
+import argparse
 
 from tqdm import tqdm
 import numpy as np
@@ -8,20 +9,16 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
-from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.data.GoEmotions import read_goemotions_split
+# from src.data.GoEmotions import GoEmotionsDataset as Dataset
+from src.data.agnews import AGNews as Dataset
+
 from src.utils.preprocess import tokenize
 from test import test
 import torch.nn as nn
 
 
-def train(config, model, train_df, val_df, test_df, device=torch.device("cpu")):
+def train(config, model, train_dataset, val_dataset, device=torch.device("cpu")):
     writer = SummaryWriter()
-    train_text = train_df['text'].tolist()
-    # tokenize
-    train_encodings = tokenize(config, train_text)
-    # prepare dataset and data loader
-    train_dataset = Dataset(train_encodings, train_df)
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"])
 
@@ -31,7 +28,7 @@ def train(config, model, train_df, val_df, test_df, device=torch.device("cpu")):
     # weights=torch.FloatTensor([0.3,1]).cuda()
     loss = nn.CrossEntropyLoss()
     training_steps = int(
-        (config['epochs'] * train_df.shape[0]) / config['batch_size'])
+        (config['epochs'] * len(train_dataset)) / config['batch_size'])
     num_warmup_steps = 0  # int(training_steps*0.1)
     scheduler = get_linear_schedule_with_warmup(optimizer_ft, num_warmup_steps=num_warmup_steps,
                                                 num_training_steps=training_steps)
@@ -58,24 +55,35 @@ def train(config, model, train_df, val_df, test_df, device=torch.device("cpu")):
                 writer.add_scalar("loss", data_loss / 10, steps)
                 data_loss = 0
             if(steps > 0 and steps % 100 == 0):
-                acc, report = test(model, config, val_df)
+                acc, report = test(model, val_dataset)
                 writer.add_scalar("accuracy", acc, steps)
                 writer.add_text("classification_report", str(report), steps)
                 model.train()
             steps = steps+1
 
 
-if __name__ == "__main__":
-    with open('./src/config/params.yml', 'r') as f:
+def main(args):
+    with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
-    print("Done reading data")
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # read
-    train_df, val_df, test_df = read_goemotions_split(config["data"])
-    # train test split
-    num_labels = len(train_df.label.unique())
-    # build model
+
+    train_dataset = Dataset(config, split='train')
+    val_dataset = Dataset(config, split='val')
+
+    num_labels = train_dataset.num_labels
+
     model = BertClassification(config, num_labels=num_labels)
     model.to(device)
-    # train
-    train(config, model, train_df, val_df, test_df, device)
+
+    train(config, model, train_dataset, val_dataset, device)
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--config', type=str, default='./src/config/params.yml', help='Path to config file')
+    args = parser.parse_args()
+
+    main(args)
