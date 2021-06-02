@@ -9,7 +9,6 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
 from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.data.GoEmotions import read_goemotions_split
 from src.utils.preprocess import tokenize
 from test import test
 import torch.optim as optim
@@ -20,21 +19,17 @@ from meta_test import meta_test_train
 from sklearn.utils import shuffle
 
 
-def meta_train(config, model, df, device=torch.device("cpu")):
+def meta_train(config, model, device=torch.device("cpu")):
     writer = SummaryWriter()
     loss = nn.CrossEntropyLoss()
     outerstepsize0 = 0.1
     niterations = 50000
     task_steps = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
-    df = shuffle(df)
     total_steps = 0
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
         sample_task = random.randint(1, 4)
         print("Sampled Task", sample_task)
-        task_data = df.loc[df['task_id'] == sample_task]
-        train_text = task_data['text'].tolist()
-        train_encodings = tokenize(config, train_text)
         optimizer_ft = optim.SGD([
             {'params': model.bert.parameters()},
             {'params': model.classifier.parameters(), 'lr': 2e-2}
@@ -42,7 +37,8 @@ def meta_train(config, model, df, device=torch.device("cpu")):
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = Dataset(train_encodings, task_data)
+        train_dataset = Dataset(config, split='train')
+        train_dataset.set_dataset(task=sample_task)
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
         for attention, input_id, token_id, label in tqdm(train_loader):
@@ -75,7 +71,7 @@ def meta_train(config, model, df, device=torch.device("cpu")):
                                                        weights_before[name]) * outerstepsize
                                for name in weights_before})
         if (iteration > 0 and iteration % config["acc_plot_step"] == 0):
-            meta_test_train(config, model, df, writer, iteration,
+            meta_test_train(config, model, writer, iteration,
                             niterations, task_steps, device)
 
 
@@ -85,11 +81,10 @@ if __name__ == "__main__":
     print("Done reading data")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # read
-    df = read_goemotions_split(config["data"])
     # train test split
     num_labels = 5
     # build model
     model = BertClassification(config, num_labels=num_labels)
     model.to(device)
     # train
-    meta_train(config, model, df, device)
+    meta_train(config, model, device)

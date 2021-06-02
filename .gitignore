@@ -8,3 +8,6 @@ logs/*
 test_bertforclassification_sample.py
 **/runs/*
 src/resources/ag_news
+src/resources/emotions/downloads
+src/resources/emotions/go_emotions
+src/resources/emotions/*.lock

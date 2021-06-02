@@ -8,7 +8,6 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
 from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.data.GoEmotions import read_goemotions_split
 from src.utils.preprocess import tokenize
 from test import test
 import torch.optim as optim
@@ -23,7 +22,8 @@ def test_meta_data(model, test_df, config, device):
     data_text = test_df['text'].tolist()
     data_encodings = tokenize(config, data_text)
 
-    test_dataset = Dataset(data_encodings, test_df)
+    test_dataset = Dataset(config, split='test')
+    test_dataset.set_dataset(task=5)
     test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
 
     pred_labels = []
@@ -43,15 +43,13 @@ def test_meta_data(model, test_df, config, device):
     return accuracy_score(target_labels, pred_labels), classification_report(target_labels, pred_labels)
 
 
-def meta_test_train(config, model, df, writer, iteration, niterations, task_steps, device=torch.device("cpu")):
+def meta_test_train(config, model, writer, iteration, niterations, task_steps, device=torch.device("cpu")):
     loss = nn.CrossEntropyLoss()
     outerstepsize0 = 0.1
     weights_before = deepcopy(model.state_dict())
     sample_task = 5
     print("Sampled TaSK Test", sample_task)
-    task_data = df.loc[df['task_id'] == sample_task].head(450)
-    train_text = task_data['text'].tolist()
-    train_encodings = tokenize(config, train_text)
+
     optimizer_ft = optim.SGD([
         {'params': model.bert.parameters()},
         {'params': model.classifier.parameters(), 'lr': 2e-2}
@@ -59,8 +57,9 @@ def meta_test_train(config, model, df, writer, iteration, niterations, task_step
     steps = 0
     model.train()
     data_loss = 0
-    train_dataset = Dataset(train_encodings, task_data)
-    train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
+    test_dataset = Dataset(config, split='train')
+    test_dataset.set_dataset(task=5)
+    train_loader = DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"])
     for attention, input_id, token_id, label in tqdm(train_loader):
         if (torch.cuda.is_available()):
@@ -91,7 +90,7 @@ def meta_test_train(config, model, df, writer, iteration, niterations, task_step
                            weights_before[name] + (weights_after[name] -
                                                    weights_before[name]) * outerstepsize
                            for name in weights_before})
-    acc, report = test_meta_data(model, df.tail(50), config, device)
+    acc, report = test_meta_data(model, config, device)
     writer.add_scalar('accuracy' + str(sample_task),
                       acc, task_steps[sample_task])
     writer.add_text('report' + str(sample_task),
