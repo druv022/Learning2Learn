@@ -1,3 +1,6 @@
+import os
+import pickle
+
 from datasets import load_dataset
 import datasets
 from torch.utils.data import Dataset
@@ -40,46 +43,68 @@ class AGNews(Dataset):
 
 class AGNewsNLI(Dataset):
     def __init__(self, config, split='train'):
+        self.split = split
         self.config = config
-        if split == 'train':
-            self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='train[:80%]')
-        elif split == 'val':
-            self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='train[80%:100%]')
-        elif split == 'test':
-            self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='test')
+        self.dump_file_path = os.path.join(self.config['cache_dir'], self.split +'_dump.pkl')
+
+        if not os.path.exists(self.dump_file_path):
+            if split == 'train':
+                self.dataset = load_dataset(
+                    'ag_news', cache_dir=self.config['cache_dir'], split='train[:80%]')
+            elif split == 'val':
+                self.dataset = load_dataset(
+                    'ag_news', cache_dir=self.config['cache_dir'], split='train[80%:100%]')
+            elif split == 'test':
+                self.dataset = load_dataset(
+                    'ag_news', cache_dir=self.config['cache_dir'], split='test')
+            else:
+                print(
+                    "Please choose one of the following ['train', 'val', 'test']")
+
+            self.num_labels = len(set(self.dataset['label']))
+
+        self._save_and_load()
+        self.encodings = tokenize(config, self.new_text)
+
+    def _save_and_load(self):
+        if os.path.exists(self.dump_file_path):
+            with open(self.dump_file_path, 'rb') as f:
+                data = pickle.load(f)
+            self.new_text = data['text']
+            self.new_labels = data['label']
+            self.num_labels = data['num_labels']
         else:
-            print(
-                "Please choose one of the following ['train', 'val', 'test']")
+            self.extended_labels = {i:' This text is about '+ i.lower() for i in self.dataset.features['label'].names}
+            self.new_text = []
+            self.new_labels = []
+            for idx, text in enumerate(self.dataset['text']):
+                label = self.dataset['label'][idx]
+                for label2, label_with_text in self.extended_labels.items():
+                    self.new_text.append(text+label_with_text)
+                    self.new_labels.append(1 if self.dataset.features['label'].names[label] == label2 else 0)
 
-        self.encodings = tokenize(config, self.dataset['text'])
-        self.num_labels = len(set(self.dataset['label']))
-        self.extended_labels = {i:' This text is about '+ i for i in self.dataset.features['label'].names}
-        self.ext_labels_encodings = tokenize(config, list(self.extended_labels.values()))
-
+            data = {'text': self.new_text, 'label': self.new_labels, 'num_labels': self.num_labels}
+            with open(self.dump_file_path, 'wb') as f:
+                pickle.dump(data, f)
+            del data
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
-        data = self.dataset[idx]
-        text = data['text']
-        true_label = data['label']
-        encoding = self.encodings[idx]
-
+        new_idx = idx*self.num_labels
         concat_ids = []
         concat_attn = []
         concat_type_ids = []
         concat_label = []
-        for i, label in enumerate(self.extended_labels):
-            concat_ids.append(torch.tensor(encoding.ids+self.ext_labels_encodings[i].ids))
-            concat_attn.append(torch.tensor(encoding.attention_mask + self.ext_labels_encodings[i].attention_mask))
-            concat_type_ids.append(torch.tensor(encoding.type_ids + self.ext_labels_encodings[i].type_ids))
-            label_id = 1 if self.dataset.features['label'].names[true_label] == label else 0
-            concat_label.append(torch.tensor(label_id))
-        
+
+        for i in range(new_idx, new_idx+self.num_labels):
+            encoding = self.encodings[i]
+            concat_ids.append(torch.tensor(encoding.ids))
+            concat_attn.append(torch.tensor(encoding.attention_mask))
+            concat_type_ids.append(torch.tensor(encoding.type_ids))
+            concat_label.append(torch.tensor(self.new_labels[i], dtype=torch.long))
+
         concat_ids = torch.stack(concat_ids)
         concat_attn = torch.stack(concat_attn)
         concat_type_ids = torch.stack(concat_type_ids)
