@@ -19,8 +19,9 @@ class BertClassification(nn.Module):
         tokens=tokens.reshape(tokens.shape[0] * tokens.shape[1], tokens.shape[2])
         output = self.bert(
             input_ids=input, attention_mask=attention, token_type_ids=tokens)
-        last_state = torch.mean(output.last_hidden_state, dim=1)
+        last_state=output.pooler_output
+        ##last_state = torch.mean(output.last_hidden_state, dim=1)
         drop_output = self.dropout(last_state)
-        score = self.score_layer(drop_output)
+        score = torch.tanh(self.score_layer(drop_output))
         score=score.reshape(batch_size,num_labels)
         return score
