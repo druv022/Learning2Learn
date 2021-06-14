@@ -52,7 +52,7 @@ class AGNewsNLI(Dataset):
                 'ag_news', cache_dir=self.config['cache_dir'], split='train[:80%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['cache_dir'], split='train[80%:100%]')
+                'ag_news', cache_dir=self.config['cache_dir'], split='train[90%:]')
         elif split == 'test':
             self.dataset = load_dataset(
                 'ag_news', cache_dir=self.config['cache_dir'], split='test')

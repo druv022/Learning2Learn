@@ -17,13 +17,13 @@ from test import test
 import torch.nn as nn
 
 
-def train(config, model, train_dataset, val_dataset, device=torch.device("cpu")):
+def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.device("cpu")):
     writer = SummaryWriter()
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"])
 
     optim1 = AdamW(
-        model.parameters(), lr=2e-5, correct_bias=False)
+        model.parameters(), lr=5e-5, correct_bias=False)
     optimizer_ft = optim1
     # weights=torch.FloatTensor([0.3,1]).cuda()
     loss = nn.CrossEntropyLoss()
@@ -55,12 +55,18 @@ def train(config, model, train_dataset, val_dataset, device=torch.device("cpu"))
             if (steps > 0 and steps % 100 == 0):
                 writer.add_scalar("loss", data_loss / 100, steps)
                 data_loss = 0
-            if(steps > 0 and steps % 400 == 0):
+            if(steps > 0 and steps % 500 == 0):
                 acc, report = test(model, val_dataset)
-                writer.add_scalar("accuracy", acc, steps)
-                writer.add_text("classification_report", str(report), steps)
+                writer.add_scalar("validation_accuracy", acc, steps)
+                writer.add_text("validation_classification_report", str(report), steps)
                 model.train()
             steps = steps+1
+    acc, report = test(model, test_dataset)
+    writer.add_scalar("test_accuracy", acc, steps)
+    writer.add_text("test_classification_report", str(report), steps)
+
+
+
 
 
 def main(args):
@@ -71,13 +77,14 @@ def main(args):
 
     train_dataset = Dataset(config, split='train')
     val_dataset = Dataset(config, split='val')
+    test_dataset=Dataset(config,split='test')
 
     num_labels = train_dataset.num_labels
 
     model = BertClassification(config, num_labels=num_labels)
     model.to(device)
 
-    train(config, model, train_dataset, val_dataset, device)
+    train(config, model, train_dataset, val_dataset,test_dataset, device)
 
 
 if __name__ == "__main__":
