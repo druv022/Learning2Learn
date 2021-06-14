@@ -52,10 +52,10 @@ def train(config, model, train_dataset, val_dataset, device=torch.device("cpu"))
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer_ft.step()
             data_loss = data_loss + model_loss.item()
-            if (steps > 0 and steps % 50 == 0):
-                writer.add_scalar("loss", data_loss / 50, steps)
+            if (steps > 0 and steps % 100 == 0):
+                writer.add_scalar("loss", data_loss / 100, steps)
                 data_loss = 0
-            if(steps > 0 and steps % 200 == 0):
+            if(steps > 0 and steps % 400 == 0):
                 acc, report = test(model, val_dataset)
                 writer.add_scalar("accuracy", acc, steps)
                 writer.add_text("classification_report", str(report), steps)
