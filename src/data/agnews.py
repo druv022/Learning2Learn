@@ -46,21 +46,22 @@ class AGNewsNLI(Dataset):
         self.split = split
         self.config = config
         self.dump_file_path = os.path.join(self.config['cache_dir'], self.split +'_dump.pkl')
-        if not os.path.exists(self.dump_file_path):
-            if split == 'train':
-                self.dataset = load_dataset(
-                    'ag_news', cache_dir=self.config['cache_dir'], split='train[:80%]')
-            elif split == 'val':
-                self.dataset = load_dataset(
-                    'ag_news', cache_dir=self.config['cache_dir'], split='train[80%:100%]')
-            elif split == 'test':
-                self.dataset = load_dataset(
-                    'ag_news', cache_dir=self.config['cache_dir'], split='test')
-            else:
-                print(
-                    "Please choose one of the following ['train', 'val', 'test']")
+        
+        if split == 'train':
+            self.dataset = load_dataset(
+                'ag_news', cache_dir=self.config['cache_dir'], split='train[:80%]')
+        elif split == 'val':
+            self.dataset = load_dataset(
+                'ag_news', cache_dir=self.config['cache_dir'], split='train[80%:100%]')
+        elif split == 'test':
+            self.dataset = load_dataset(
+                'ag_news', cache_dir=self.config['cache_dir'], split='test')
+        else:
+            print(
+                "Please choose one of the following ['train', 'val', 'test']")
 
-            self.num_labels = len(set(self.dataset['label']))
+        self.num_labels = len(set(self.dataset['label']))
+
         self._save_and_load()
         self.encodings = tokenize(config, self.new_text)
 
@@ -79,31 +80,27 @@ class AGNewsNLI(Dataset):
                 label = self.dataset['label'][idx]
                 for label2, label_with_text in self.extended_labels.items():
                     self.new_text.append(text+label_with_text)
-                    self.new_labels.append(1 if self.dataset.features['label'].names[label] == label2 else 0)
+                self.new_labels.append(label)
             data = {'text': self.new_text, 'label': self.new_labels, 'num_labels': self.num_labels}
             with open(self.dump_file_path, 'wb') as f:
                 pickle.dump(data, f)
             del data
 
     def __len__(self):
-        return len(self.encodings)
+        return len(self.dataset)
 
     def __getitem__(self, idx):
         new_idx = idx*self.num_labels
         concat_ids = []
         concat_attn = []
         concat_type_ids = []
-        label=None
-        first_data=False
         for i in range(new_idx, new_idx+self.num_labels):
             encoding = self.encodings[i]
             concat_ids.append(torch.tensor(encoding.ids))
             concat_attn.append(torch.tensor(encoding.attention_mask))
             concat_type_ids.append(torch.tensor(encoding.type_ids))
-            if(first_data==False):
-                label=torch.tensor(self.new_labels[i], dtype=torch.long)
-                first_data=True
 
+        label = torch.tensor(self.new_labels[idx])
         concat_ids = torch.stack(concat_ids)
         concat_attn = torch.stack(concat_attn)
         concat_type_ids = torch.stack(concat_type_ids)
