@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
 # from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.data.agnews import AGNews as Dataset
+from src.data.agnews import AGNewsNLI as Dataset
 
 from src.utils.preprocess import tokenize
 from test import test
@@ -42,6 +42,7 @@ def train(config, model, train_dataset, val_dataset, device=torch.device("cpu"))
                 input_id = input_id.cuda()
                 token_id = token_id.cuda()
                 label = label.cuda()
+
             logits = model.forward(attention, input_id, token_id)
             # class_cat=class_cat.unsqueeze(1)
             model_loss = loss(logits, label)
