@@ -22,6 +22,6 @@ class BertClassification(nn.Module):
         last_state=output.pooler_output
         ##last_state = torch.mean(output.last_hidden_state, dim=1)
         drop_output = self.dropout(last_state)
-        score = torch.tanh(self.score_layer(drop_output))
+        score = self.score_layer(drop_output)
         score=score.reshape(batch_size,num_labels)
         return score
