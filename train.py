@@ -15,6 +15,7 @@ from src.data.agnews import AGNewsNLI as Dataset
 from src.utils.preprocess import tokenize
 from test import test
 import torch.nn as nn
+import time
 
 
 def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.device("cpu")):
@@ -23,7 +24,7 @@ def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.d
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"])
 
     optim1 = AdamW(
-        model.parameters(), lr=5e-5, correct_bias=False)
+        model.parameters(), lr=2e-5, correct_bias=False)
     optimizer_ft = optim1
     # weights=torch.FloatTensor([0.3,1]).cuda()
     loss = nn.CrossEntropyLoss()
@@ -64,6 +65,7 @@ def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.d
     acc, report = test(model, test_dataset)
     writer.add_scalar("test_accuracy", acc, steps)
     writer.add_text("test_classification_report", str(report), steps)
+    time.sleep(100)
 
 
 

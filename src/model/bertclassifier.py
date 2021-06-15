@@ -9,7 +9,8 @@ class BertClassification(nn.Module):
         self.bert = BertModel.from_pretrained(config['modelname'])
         self.config = BertConfig.from_pretrained(config['modelname'])
         self.dropout = nn.Dropout(self.config.hidden_dropout_prob)
-        self.score_layer = nn.Linear(self.config.hidden_size, 1)
+        self.pre_score_layer = nn.Linear(self.config.hidden_size, 48)
+        self.score_layer = nn.Linear(48, 1)
 
     def forward(self, attention, input, tokens):
         num_labels=attention.shape[1]
@@ -22,6 +23,7 @@ class BertClassification(nn.Module):
         last_state=output.pooler_output
         ##last_state = torch.mean(output.last_hidden_state, dim=1)
         drop_output = self.dropout(last_state)
-        score = self.score_layer(drop_output)
+        pre_score = torch.tanh(self.pre_score_layer(drop_output))
+        score=self.score_layer(pre_score)
         score=score.reshape(batch_size,num_labels)
         return score
