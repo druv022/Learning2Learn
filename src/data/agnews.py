@@ -6,7 +6,7 @@ import datasets
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
-from src.utils.preprocess import tokenize
+from src.utils.preprocess import tokenize,trim_text
 
 class AGNews(Dataset):
     def __init__(self, config, split='train'):
@@ -49,7 +49,7 @@ class AGNewsNLI(Dataset):
         
         if split == 'train':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['cache_dir'], split='train[:80%]')
+                'ag_news', cache_dir=self.config['cache_dir'], split='train[:90%]')
         elif split == 'val':
             self.dataset = load_dataset(
                 'ag_news', cache_dir=self.config['cache_dir'], split='train[90%:]')
@@ -74,15 +74,18 @@ class AGNewsNLI(Dataset):
             self.new_labels = data['label']
             self.num_labels = data['num_labels']
         else:
-            self.extended_labels = {i:' This text is about '+ i.lower() for i in self.dataset.features['label'].names}
+            self.extended_labels = {i:'This text is about '+ i.lower() for i in self.dataset.features['label'].names}
             self.new_text = []
             self.label_text=[]
             self.new_labels = []
             for idx, text in tqdm(enumerate(self.dataset['text'])):
                 label = self.dataset['label'][idx]
                 for label2, label_with_text in self.extended_labels.items():
-                    self.new_text.append(text)
-                    self.label_text.append(label_with_text)
+                    self.new_text.append(trim_text(text))
+                    if(label2=="Sci/Tech"):
+                        self.label_text.append("This text is about science")
+                    else:
+                        self.label_text.append(label_with_text)
                 self.new_labels.append(label)
             data = {'text': self.new_text, 'label': self.new_labels, 'num_labels': self.num_labels,'label_text':self.label_text}
             with open(self.dump_file_path, 'wb') as f:
