@@ -56,7 +56,7 @@ def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.d
             if (steps > 0 and steps % 100 == 0):
                 writer.add_scalar("loss", data_loss / 100, steps)
                 data_loss = 0
-            if(steps > 0 and steps % 500 == 0):
+            if(steps > 0 and steps % 2000 == 0):
                 acc, report = test(model, val_dataset)
                 writer.add_scalar("validation_accuracy", acc, steps)
                 writer.add_text("validation_classification_report", str(report), steps)
