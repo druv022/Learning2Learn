@@ -66,7 +66,7 @@ class AGNewsNLI(Dataset):
         self.num_labels = len(set(self.dataset['label']))
 
         self.extended_labels = {i: 'This text is about ' + i.lower() if i.lower() != 'sci/tech' else
-                                'This text is about science or technology' for i in self.dataset.features['label'].names}
+                                'This text is about technology' for i in self.dataset.features['label'].names}
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
             trim_text(x), len(self.extended_labels)) for x in self.dataset['text'])]
         self.label_text = list(
