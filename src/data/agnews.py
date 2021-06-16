@@ -1,12 +1,14 @@
 import os
 import pickle
+import itertools
 
 from datasets import load_dataset
 import datasets
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
-from src.utils.preprocess import tokenize,trim_text
+from src.utils.preprocess import tokenize, trim_text
+
 
 class AGNews(Dataset):
     def __init__(self, config, split='train'):
@@ -45,8 +47,9 @@ class AGNewsNLI(Dataset):
     def __init__(self, config, split='train'):
         self.split = split
         self.config = config
-        self.dump_file_path = os.path.join(self.config['cache_dir'], self.split +'_dump.pkl')
-        
+        self.dump_file_path = os.path.join(
+            self.config['cache_dir'], self.split + '_dump.pkl')
+
         if split == 'train':
             self.dataset = load_dataset(
                 'ag_news', cache_dir=self.config['cache_dir'], split='train[:90%]')
@@ -62,35 +65,15 @@ class AGNewsNLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
-        self._save_and_load()
-        self.encodings = tokenize(config, self.new_text,self.label_text)
+        self.extended_labels = {i: 'This text is about ' + i.lower() if i.lower() != 'sci/tech' else
+                                'This text is about science or technology' for i in self.dataset.features['label'].names}
+        self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
+            trim_text(x), len(self.extended_labels)) for x in self.dataset['text'])]
+        self.label_text = list(
+            self.extended_labels.values()) * len(self.dataset['text'])
+        self.new_labels = self.dataset['label']
 
-    def _save_and_load(self):
-        if os.path.exists(self.dump_file_path):
-            with open(self.dump_file_path, 'rb') as f:
-                data = pickle.load(f)
-            self.new_text = data['text']
-            self.label_text = data['label_text']
-            self.new_labels = data['label']
-            self.num_labels = data['num_labels']
-        else:
-            self.extended_labels = {i:'This text is about '+ i.lower() for i in self.dataset.features['label'].names}
-            self.new_text = []
-            self.label_text=[]
-            self.new_labels = []
-            for idx, text in tqdm(enumerate(self.dataset['text'])):
-                label = self.dataset['label'][idx]
-                for label2, label_with_text in self.extended_labels.items():
-                    self.new_text.append(trim_text(text))
-                    if(label2=="Sci/Tech"):
-                        self.label_text.append("This text is about science")
-                    else:
-                        self.label_text.append(label_with_text)
-                self.new_labels.append(label)
-            data = {'text': self.new_text, 'label': self.new_labels, 'num_labels': self.num_labels,'label_text':self.label_text}
-            with open(self.dump_file_path, 'wb') as f:
-                pickle.dump(data, f)
-            del data
+        self.encodings = tokenize(config, self.new_text, self.label_text)
 
     def __len__(self):
         return len(self.dataset)
