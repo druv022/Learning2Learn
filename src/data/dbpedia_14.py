@@ -3,29 +3,28 @@ import pickle
 import itertools
 
 from datasets import load_dataset
-import datasets
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
 from src.utils.preprocess import tokenize, trim_text
 
 
-class AGNews(Dataset):
+class DBPedia14(Dataset):
     def __init__(self, config, split='train'):
         if split == 'train':
             self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='train[:80%]')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='train[:80%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='train[80%:100%]')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='train[80%:100%]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'ag_news', cache_dir='src/resources/ag_news', split='test')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
 
-        self.encodings = tokenize(config, self.dataset['text'])
+        self.encodings = tokenize(config, self.dataset['content'])
         self.num_labels = len(set(self.dataset['label']))
 
     def __len__(self):
@@ -33,7 +32,7 @@ class AGNews(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        text = data['text']
+        text = data['content']
         label = data['label']
         encoding = self.encodings[idx]
         ids = torch.tensor(encoding.ids)
@@ -43,32 +42,33 @@ class AGNews(Dataset):
         return attention, ids, type_ids, label
 
 
-class AGNewsNLI(Dataset):
+class DBPedai14NLI(Dataset):
     def __init__(self, config, split='train'):
         self.split = split
         self.config = config
 
         if split == 'train':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['cache_dir'], split='train[:90%]')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='train[:90%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['cache_dir'], split='train[90%:]')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='train[90%:]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['cache_dir'], split='test')
+                'dbpedia_14', cache_dir=self.config['cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
 
         self.num_labels = len(set(self.dataset['label']))
 
-        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() in config['remapping'] else
-                                config['prepend'] + config['remapping'][i.lower()] for i in self.dataset.features['label'].names}
-        self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x), len(self.extended_labels)) for x in self.dataset['text'])]
+        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() != 'sci/tech' else
+                                config['prepend'] + 'science or technology' for i in self.dataset.features['label'].names}
         self.label_text = list(
-            self.extended_labels.values()) * len(self.dataset['text'])
+            self.extended_labels.values()) * len(self.dataset['content'])
+        
+        self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
+            trim_text(x), len(self.extended_labels)) for x in self.dataset['content'])]
         self.new_labels = self.dataset['label']
 
         self.encodings = tokenize(config, self.new_text, self.label_text)
