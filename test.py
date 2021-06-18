@@ -3,10 +3,6 @@ import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import classification_report, accuracy_score
 
-from src.model.bertclassifier2 import BertClassification
-from src.utils.preprocess import tokenize
-from src.data.GoEmotions import GoEmotionsDataset as Dataset
-
 
 def test(model, test_dataset, device=torch.device("cuda")):
     model.eval()

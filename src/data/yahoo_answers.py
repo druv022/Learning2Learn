@@ -3,25 +3,25 @@ import pickle
 import itertools
 
 from datasets import load_dataset
-import datasets
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
 from src.utils.preprocess import Tokenizer, trim_text
 
 
-class AGNews(Dataset):
+class YahooAnswers(Dataset):
     def __init__(self, config, split='train', sample_size=-1):
         self.config = config
+
         if split == 'train':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='train[:80%]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:95%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='train[80%:100%]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[95%:]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='test')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
@@ -30,18 +30,18 @@ class AGNews(Dataset):
             self.sample_size = len(self.dataset)
         else:
             self.sample_size = sample_size
-        
+
         tokenizer = Tokenizer(self.config)
-        self.encodings = tokenizer.tokenize(self.dataset['text'][0:self.sample_size])
-        self.num_labels = len(set(self.dataset['label']))
+        self.encodings = tokenizer.tokenize(self.dataset['best_answer'][0:self.sample_size])
+        self.num_labels = len(set(self.dataset['topic']))
 
     def __len__(self):
         return self.sample_size
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        text = data['text']
-        label = data['label']
+        text = data['best_answer']
+        label = data['topic']
         encoding = self.encodings[idx]
         ids = torch.tensor(encoding.ids)
         attention = torch.tensor(encoding.attention_mask)
@@ -50,41 +50,41 @@ class AGNews(Dataset):
         return attention, ids, type_ids, label
 
 
-class AGNewsNLI(Dataset):
+class YahooAnswers14NLI(Dataset):
     def __init__(self, config, split='train', sample_size=-1):
         self.split = split
         self.config = config
 
         if split == 'train':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='train[:90%]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:95%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='train[90%:]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[95%:]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'ag_news', cache_dir=self.config['agnews_cache_dir'], split='test')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
-
+        
         if sample_size < 0:
             self.sample_size = len(self.dataset)
         else:
             self.sample_size = sample_size
 
-        self.num_labels = len(set(self.dataset['label']))
+        self.num_labels = len(set(self.dataset['topic']))
 
-        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() not in config['agnews_remapping'] else
-                                config['prepend'] + config['agnews_remapping'][i.lower()] for i in self.dataset.features['label'].names}
+        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() not in config['yahoo_remapping'] else
+                                config['prepend'] + config['yahoo_remapping'][i.lower()] for i in self.dataset.features['topic'].names}
         self.label_text = list(
-            self.extended_labels.values()) * len(self.dataset['text'][0:self.sample_size])
-        self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x), len(self.extended_labels)) for x in self.dataset['text'][0:self.sample_size])]
-        self.new_labels = self.dataset['label'][0:self.sample_size]
+            self.extended_labels.values()) * len(self.dataset['best_answer'][0:sample_size])
 
-        tokenizer = Tokenizer(self.config)
-        self.encodings = tokenizer.tokenize(self.new_text, self.label_text)
+        self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
+            trim_text(x), len(self.extended_labels)) for x in self.dataset['best_answer'][0:self.sample_size])]
+        self.new_labels = self.dataset['topic'][0:self.sample_size]
+
+        self.tokenizer = Tokenizer(self.config)
 
     def __len__(self):
         return self.sample_size
@@ -94,8 +94,10 @@ class AGNewsNLI(Dataset):
         concat_ids = []
         concat_attn = []
         concat_type_ids = []
-        for i in range(new_idx, new_idx+self.num_labels):
-            encoding = self.encodings[i]
+        encodings = self.tokenizer.tokenize(
+            self.new_text[new_idx:new_idx+self.num_labels], self.label_text[new_idx:new_idx+self.num_labels])
+        for i in range(0, self.num_labels):
+            encoding = encodings[i]
             concat_ids.append(torch.tensor(encoding.ids))
             concat_attn.append(torch.tensor(encoding.attention_mask))
             concat_type_ids.append(torch.tensor(encoding.type_ids))

@@ -12,6 +12,7 @@ split: 0.2
 shuffle: true
 num_workers: 0
 pin_memory: true
+num_samples: 10000 # set to -1 for all datapoints, otherwise specify a number 
 
 # tokenizer
 padding: true
@@ -42,9 +43,27 @@ prepend: 'This text is about '
 
 
 # Datasets:
-name: 'ag_news' # use key to select
+name: 'ag_news' # use key to select dataset,
+
 #--------------------------------------
 # AG NEWS (key: ag_news)
 #--------------------------------------
-cache_dir: 'src/resources/ag_news'
-remapping: {'sci/tech': 'science or technology'}
+agnews_cache_dir: 'src/resources/ag_news'
+agnews_remapping: {'sci/tech': 'science or technology'}
+
+
+#--------------------------------------
+# DBPedia 14 (key: dbpedia_14)
+#--------------------------------------
+dbpedia_cache_dir: 'src/resources/dbpedia_14'
+dbpedia_remapping: {"educationalinstitution": "educational institution",
+            "officeholder": "office holder",
+            "meanoftransportation": "mean of transportation",
+            "naturalplace": "natural place",
+            "written work": "written work"}
+
+#--------------------------------------
+# Yahoo (key: yahoo_ans)
+#--------------------------------------
+yahoo_cache_dir: 'src/resources/yahoo_ans'
+yahoo_remapping: {}

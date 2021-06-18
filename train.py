@@ -6,22 +6,41 @@ from tqdm import tqdm
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
 # from src.data.GoEmotions import GoEmotionsDataset as Dataset
 from src.data.agnews import AGNewsNLI as Dataset
+# from src.data.dbpedia_14 import DBPedai14NLI as Dataset
+# from src.data.yahoo_answers import YahooAnswers14NLI as Dataset
 
-from src.utils.preprocess import tokenize
 from test import test
 import torch.nn as nn
 import time
 
 
-def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.device("cpu")):
-    writer = SummaryWriter()
+def pad_input(batch):
+    attention, input_id, token_id, label = [], [], [], []
+    max_length = max([len(item[0][0]) for item in batch])
+    for item in batch:
+        pad_length = max_length - len(item[0][0])
+        attention.append(F.pad(item[0], (0,pad_length)))
+        input_id.append(F.pad(item[1], (0,pad_length)))
+        token_id.append(F.pad(item[2], (0,pad_length)))
+        label.append(item[3])
+
+    attention = torch.stack(attention)
+    input_id = torch.stack(input_id)
+    token_id = torch.stack(token_id)
+    label = torch.stack(label)
+
+    return attention, input_id, token_id, label
+
+
+def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, device=torch.device("cpu")):
     train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
-                              num_workers=config["num_workers"], pin_memory=config["pin_memory"])
+                              num_workers=config["num_workers"], pin_memory=config["pin_memory"], collate_fn=pad_input)
 
     optim1 = AdamW(
         model.parameters(), lr=2e-5, correct_bias=False)
@@ -36,8 +55,11 @@ def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.d
     steps = 0
     model.train()
     data_loss = 0
+    best_acc = 0
+    best_model = model
     while (steps < training_steps):
         for attention, input_id, token_id, label in tqdm(train_loader):
+            model.train()
             if (torch.cuda.is_available()):
                 attention = attention.cuda()
                 input_id = input_id.cuda()
@@ -59,16 +81,22 @@ def train(config, model, train_dataset, val_dataset,test_dataset, device=torch.d
             if(steps > 0 and steps % 2000 == 0):
                 acc, report = test(model, val_dataset)
                 writer.add_scalar("validation_accuracy", acc, steps)
-                writer.add_text("validation_classification_report", str(report), steps)
-                model.train()
+                writer.add_text(
+                    "validation_classification_report", str(report), steps)
+
+                if best_acc < acc:
+                    best_model = model
+
             steps = steps+1
-    acc, report = test(model, test_dataset)
-    writer.add_scalar("test_accuracy", acc, steps)
-    writer.add_text("test_classification_report", str(report), steps)
+
     time.sleep(100)
+    return best_model
 
 
-
+def test_model(model, writer, test_data):
+    acc, report = test(model, test_data)
+    writer.add_scalar("test_accuracy", acc, 0)
+    writer.add_text("test_classification_report", str(report), 0)
 
 
 def main(args):
@@ -77,16 +105,24 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_dataset = Dataset(config, split='train')
+    train_dataset = Dataset(config, split='train',
+                            sample_size=config['num_samples'])
     val_dataset = Dataset(config, split='val')
-    test_dataset=Dataset(config,split='test')
 
+    writer = SummaryWriter()
     num_labels = train_dataset.num_labels
 
     model = BertClassification(config, num_labels=num_labels)
     model.to(device)
 
-    train(config, model, train_dataset, val_dataset,test_dataset, device)
+    model = train(config, writer, model, train_dataset, val_dataset, device)
+
+    del train_dataset
+    del val_dataset
+
+    # test separately after saving the model
+    test_dataset = Dataset(config, split='test')
+    test_model(model, writer, test_dataset)
 
 
 if __name__ == "__main__":

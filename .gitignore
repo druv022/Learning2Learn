@@ -14,3 +14,5 @@ src/resources/ag_news/*.lock
 src/resources/emotions/downloads
 src/resources/emotions/go_emotions
 src/resources/emotions/*.lock
+src/resources/dbpedia_14
+src/resources/yahoo_ans
