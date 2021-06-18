@@ -29,7 +29,7 @@ class YahooAnswers(Dataset):
         if sample_size < 0:
             self.sample_size = len(self.dataset)
         else:
-            self.sample_size = sample_size
+            self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
 
         tokenizer = Tokenizer(self.config)
         self.encodings = tokenizer.tokenize(self.dataset['best_answer'][0:self.sample_size])
@@ -71,7 +71,7 @@ class YahooAnswers14NLI(Dataset):
         if sample_size < 0:
             self.sample_size = len(self.dataset)
         else:
-            self.sample_size = sample_size
+            self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
 
         self.num_labels = len(set(self.dataset['topic']))
 

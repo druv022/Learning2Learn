@@ -43,7 +43,7 @@ prepend: 'This text is about '
 
 
 # Datasets:
-name: 'ag_news' # use key to select dataset,
+dataset_name: 'yelp_review' # use key to select dataset,
 
 #--------------------------------------
 # AG NEWS (key: ag_news)
@@ -67,3 +67,9 @@ dbpedia_remapping: {"educationalinstitution": "educational institution",
 #--------------------------------------
 yahoo_cache_dir: 'src/resources/yahoo_ans'
 yahoo_remapping: {}
+
+#--------------------------------------
+# Yelp review (key: yelp_review)
+#--------------------------------------
+yelp_cache_dir: 'src/resources/yelp_review'
+yelp_remapping: {}

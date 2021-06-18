@@ -1,4 +1,5 @@
 from pathlib import Path
+from pandas.core.indexing import convert_from_missing_indexer_tuple
 import yaml
 import argparse
 
@@ -10,10 +11,10 @@ import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
-# from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.data.agnews import AGNewsNLI as Dataset
-# from src.data.dbpedia_14 import DBPedai14NLI as Dataset
-# from src.data.yahoo_answers import YahooAnswers14NLI as Dataset
+from src.data.agnews import AGNewsNLI 
+from src.data.dbpedia_14 import DBPedai14NLI 
+from src.data.yahoo_answers import YahooAnswers14NLI 
+from src.data.yelp_review import YelpReview14NLI
 
 from test import test
 import torch.nn as nn
@@ -99,15 +100,36 @@ def test_model(model, writer, test_data):
     writer.add_text("test_classification_report", str(report), 0)
 
 
+def get_dataset(config, name, sample_size):
+    if name == 'ag_news':
+        train_dataset = AGNewsNLI(config, split='train', sample_size=sample_size)
+        val_dataset = AGNewsNLI(config, split='val')
+        test_dataset = AGNewsNLI(config, split='test')
+    elif name == 'dbpedia_14':
+        train_dataset = DBPedai14NLI(config, split='train', sample_size=sample_size)
+        val_dataset = DBPedai14NLI(config, split='val')
+        test_dataset = DBPedai14NLI(config, split='test')
+    elif name == 'yahoo_ans':
+        train_dataset = YahooAnswers14NLI(config, split='train', sample_size=sample_size)
+        val_dataset = YahooAnswers14NLI(config, split='val')
+        test_dataset = YahooAnswers14NLI(config, split='test')
+    elif name == 'yelp_review':
+        train_dataset = YelpReview14NLI(config, split='train', sample_size=sample_size)
+        val_dataset = YelpReview14NLI(config, split='val')
+        test_dataset = YelpReview14NLI(config, split='test')
+    else:
+        print("Please check the name of the dataset.")
+    
+    return train_dataset, val_dataset, test_dataset
+
+
 def main(args):
     with open(args.config, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_dataset = Dataset(config, split='train',
-                            sample_size=config['num_samples'])
-    val_dataset = Dataset(config, split='val')
+    train_dataset, val_dataset, test_dataset = get_dataset(config, config['dataset_name'], config['num_samples'])
 
     writer = SummaryWriter()
     num_labels = train_dataset.num_labels
@@ -117,11 +139,7 @@ def main(args):
 
     model = train(config, writer, model, train_dataset, val_dataset, device)
 
-    del train_dataset
-    del val_dataset
-
     # test separately after saving the model
-    test_dataset = Dataset(config, split='test')
     test_model(model, writer, test_dataset)
 
 

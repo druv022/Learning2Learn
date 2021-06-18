@@ -71,7 +71,7 @@ class AGNewsNLI(Dataset):
         if sample_size < 0:
             self.sample_size = len(self.dataset)
         else:
-            self.sample_size = sample_size
+            self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
 
         self.num_labels = len(set(self.dataset['label']))
 

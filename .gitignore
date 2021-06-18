@@ -16,3 +16,4 @@ src/resources/emotions/go_emotions
 src/resources/emotions/*.lock
 src/resources/dbpedia_14
 src/resources/yahoo_ans
+src/resources/yelp_review

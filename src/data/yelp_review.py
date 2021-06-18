@@ -3,25 +3,25 @@ import pickle
 import itertools
 
 from datasets import load_dataset
-import datasets
 from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
 from src.utils.preprocess import Tokenizer, trim_text
 
 
-class DBPedia14(Dataset):
+class YelpReview(Dataset):
     def __init__(self, config, split='train', sample_size=-1):
         self.config = config
+
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[:80%]')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='train[:95%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[80%:100%]')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='train[95%:]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
@@ -32,7 +32,7 @@ class DBPedia14(Dataset):
             self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
 
         tokenizer = Tokenizer(self.config)
-        self.encodings = tokenizer.tokenize(self.dataset['content'][0:self.sample_size])
+        self.encodings = tokenizer.tokenize(self.dataset['text'][0:self.sample_size])
         self.num_labels = len(set(self.dataset['label']))
 
     def __len__(self):
@@ -40,7 +40,7 @@ class DBPedia14(Dataset):
 
     def __getitem__(self, idx):
         data = self.dataset[idx]
-        text = data['content']
+        text = data['text']
         label = data['label']
         encoding = self.encodings[idx]
         ids = torch.tensor(encoding.ids)
@@ -50,24 +50,24 @@ class DBPedia14(Dataset):
         return attention, ids, type_ids, label
 
 
-class DBPedai14NLI(Dataset):
+class YelpReview14NLI(Dataset):
     def __init__(self, config, split='train', sample_size=-1):
         self.split = split
         self.config = config
 
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[:90%]')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='train[:95%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[90%:]')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='train[95%:]')
         elif split == 'test':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
+                'yelp_review_full', cache_dir=self.config['yelp_cache_dir'], split='test')
         else:
             print(
                 "Please choose one of the following ['train', 'val', 'test']")
-
+        
         if sample_size < 0:
             self.sample_size = len(self.dataset)
         else:
@@ -75,13 +75,13 @@ class DBPedai14NLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
-        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() not in config['dbpedia_remapping'] else
-                                config['prepend'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
+        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() not in config['yelp_remapping'] else
+                                config['prepend'] + config['yelp_remapping'][i.lower()] for i in self.dataset.features['label'].names}
         self.label_text = list(
-            self.extended_labels.values()) * len(self.dataset['content'][0:self.sample_size])
+            self.extended_labels.values()) * len(self.dataset['text'][0:sample_size])
 
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x), len(self.extended_labels)) for x in self.dataset['content'][0:self.sample_size])]
+            trim_text(x), len(self.extended_labels)) for x in self.dataset['text'][0:self.sample_size])]
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
         self.tokenizer = Tokenizer(self.config)
