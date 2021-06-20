@@ -39,8 +39,8 @@ task_mapping: {1: [9, 17, 22, 4, 18], 2: [11, 2, 14, 7, 6], 3: [23, 5, 21, 3, 24
 #-------------------------------------
 # Topic
 #-------------------------------------
-prepend: 'This text is about '
-
+prepend_topic: 'This text is about '
+prepend_review: 'It was '
 
 # Datasets:
 dataset_name: 'yelp_review' # use key to select dataset,
@@ -72,4 +72,4 @@ yahoo_remapping: {}
 # Yelp review (key: yelp_review)
 #--------------------------------------
 yelp_cache_dir: 'src/resources/yelp_review'
-yelp_remapping: {}
+yelp_remapping: {'0':'terrible','1':'bad','2':'okay','3':'good','4':'great'}

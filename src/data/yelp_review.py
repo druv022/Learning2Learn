@@ -75,8 +75,8 @@ class YelpReview14NLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
-        self.extended_labels = {i: config['prepend'] + i.lower() if i.lower() not in config['yelp_remapping'] else
-                                config['prepend'] + config['yelp_remapping'][i.lower()] for i in self.dataset.features['label'].names}
+        self.extended_labels = {i: config['prepend_review'] + i.lower() if i.lower() not in config['yelp_remapping'] else
+                                config['prepend_review'] + config['yelp_remapping'][i.lower()] for i in self.dataset.features['label'].names}
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['text'][0:sample_size])
 

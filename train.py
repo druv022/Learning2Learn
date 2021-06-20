@@ -76,8 +76,8 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer_ft.step()
             data_loss = data_loss + model_loss.item()
-            if (steps > 0 and steps % 100 == 0):
-                writer.add_scalar("loss", data_loss / 100, steps)
+            if (steps > 0 and steps % 200 == 0):
+                writer.add_scalar("loss", data_loss / 200, steps)
                 data_loss = 0
             if(steps > 0 and steps % 2000 == 0):
                 acc, report = test(model, val_dataset)
