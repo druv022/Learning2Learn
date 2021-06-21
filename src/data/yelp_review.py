@@ -85,7 +85,6 @@ class YelpReview14NLI(Dataset):
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
         self.tokenizer = Tokenizer(self.config)
-        self.encodings = self.tokenizer.tokenize(self.new_text, self.label_text)
 
     def __len__(self):
         return self.sample_size
@@ -95,8 +94,10 @@ class YelpReview14NLI(Dataset):
         concat_ids = []
         concat_attn = []
         concat_type_ids = []
-        for i in range(new_idx, new_idx + self.num_labels):
-            encoding = self.encodings[i]
+        encodings = self.tokenizer.tokenize(
+            self.new_text[new_idx:new_idx+self.num_labels], self.label_text[new_idx:new_idx+self.num_labels])
+        for i in range(0, self.num_labels):
+            encoding = encodings[i]
             concat_ids.append(torch.tensor(encoding.ids))
             concat_attn.append(torch.tensor(encoding.attention_mask))
             concat_type_ids.append(torch.tensor(encoding.type_ids))

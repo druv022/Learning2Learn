@@ -2,41 +2,23 @@ from pathlib import Path
 from pandas.core.indexing import convert_from_missing_indexer_tuple
 import yaml
 import argparse
+import time
 
 from tqdm import tqdm
 import numpy as np
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
-import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
+
 from src.model.bertclassifier import BertClassification
-from src.data.agnews import AGNewsNLI 
-from src.data.dbpedia_14 import DBPedai14NLI 
-from src.data.yahoo_answers import YahooAnswers14NLI 
+from src.data.agnews import AGNewsNLI
+from src.data.dbpedia_14 import DBPedai14NLI
+from src.data.yahoo_answers import YahooAnswers14NLI
 from src.data.yelp_review import YelpReview14NLI
-
 from test import test
-import torch.nn as nn
-import time
-
-
-def pad_input(batch):
-    attention, input_id, token_id, label = [], [], [], []
-    max_length = max([len(item[0][0]) for item in batch])
-    for item in batch:
-        pad_length = max_length - len(item[0][0])
-        attention.append(F.pad(item[0], (0,pad_length)))
-        input_id.append(F.pad(item[1], (0,pad_length)))
-        token_id.append(F.pad(item[2], (0,pad_length)))
-        label.append(item[3])
-
-    attention = torch.stack(attention)
-    input_id = torch.stack(input_id)
-    token_id = torch.stack(token_id)
-    label = torch.stack(label)
-
-    return attention, input_id, token_id, label
+from src.data.utils import pad_input
 
 
 def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, device=torch.device("cpu")):
@@ -79,8 +61,8 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
             if (steps > 0 and steps % 200 == 0):
                 writer.add_scalar("loss", data_loss / 200, steps)
                 data_loss = 0
-            if(steps > 0 and steps % 2000 == 0):
-                acc, report = test(model, val_dataset)
+            if(steps > 0 and steps % config['val_step'] == 0):
+                acc, report = test(config, model, val_dataset, device=device)
                 writer.add_scalar("validation_accuracy", acc, steps)
                 writer.add_text(
                     "validation_classification_report", str(report), steps)
@@ -94,32 +76,36 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
     return best_model
 
 
-def test_model(model, writer, test_data):
-    acc, report = test(model, test_data)
+def test_model(config, model, writer, test_data, device):
+    acc, report = test(config, model, test_data, device=device)
     writer.add_scalar("test_accuracy", acc, 0)
     writer.add_text("test_classification_report", str(report), 0)
 
 
 def get_dataset(config, name, sample_size):
     if name == 'ag_news':
-        train_dataset = AGNewsNLI(config, split='train', sample_size=sample_size)
-        val_dataset = AGNewsNLI(config, split='val')
-        test_dataset = AGNewsNLI(config, split='test')
+        train_dataset = AGNewsNLI(
+            config, split='train', sample_size=sample_size)
+        val_dataset = AGNewsNLI(config, split='val', sample_size=config['test_num_samples'])
+        test_dataset = AGNewsNLI(config, split='test', sample_size=config['test_num_samples'])
     elif name == 'dbpedia_14':
-        train_dataset = DBPedai14NLI(config, split='train', sample_size=sample_size)
-        val_dataset = DBPedai14NLI(config, split='val')
-        test_dataset = DBPedai14NLI(config, split='test')
+        train_dataset = DBPedai14NLI(
+            config, split='train', sample_size=sample_size)
+        val_dataset = DBPedai14NLI(config, split='val', sample_size=config['test_num_samples'])
+        test_dataset = DBPedai14NLI(config, split='test', sample_size=config['test_num_samples'])
     elif name == 'yahoo_ans':
-        train_dataset = YahooAnswers14NLI(config, split='train', sample_size=sample_size)
-        val_dataset = YahooAnswers14NLI(config, split='val')
-        test_dataset = YahooAnswers14NLI(config, split='test')
+        train_dataset = YahooAnswers14NLI(
+            config, split='train', sample_size=sample_size)
+        val_dataset = YahooAnswers14NLI(config, split='val', sample_size=config['test_num_samples'])
+        test_dataset = YahooAnswers14NLI(config, split='test', sample_size=config['test_num_samples'])
     elif name == 'yelp_review':
-        train_dataset = YelpReview14NLI(config, split='train', sample_size=sample_size)
-        val_dataset = YelpReview14NLI(config, split='val')
-        test_dataset = YelpReview14NLI(config, split='test')
+        train_dataset = YelpReview14NLI(
+            config, split='train', sample_size=sample_size)
+        val_dataset = YelpReview14NLI(config, split='val', sample_size=config['test_num_samples'])
+        test_dataset = YelpReview14NLI(config, split='test', sample_size=config['test_num_samples'])
     else:
         print("Please check the name of the dataset.")
-    
+
     return train_dataset, val_dataset, test_dataset
 
 
@@ -129,7 +115,8 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_dataset, val_dataset, test_dataset = get_dataset(config, config['dataset_name'], config['num_samples'])
+    train_dataset, val_dataset, test_dataset = get_dataset(
+        config, config['dataset_name'], config['train_num_samples'])
 
     writer = SummaryWriter()
     num_labels = train_dataset.num_labels
@@ -137,10 +124,11 @@ def main(args):
     model = BertClassification(config, num_labels=num_labels)
     model.to(device)
 
-    model = train(config, writer, model, train_dataset, val_dataset, device)
+    model = train(config, writer, model, train_dataset,
+                  val_dataset, device=device)
 
     # test separately after saving the model
-    test_model(model, writer, test_dataset)
+    test_model(config, model, writer, test_dataset, device=device)
 
 
 if __name__ == "__main__":
