@@ -75,12 +75,14 @@ class AGNewsNLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
+        trim_length = config['max_text_length'] - config['prepend_topic']
+
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['agnews_remapping'] else
                                 config['prepend_topic'] + config['agnews_remapping'][i.lower()] for i in self.dataset.features['label'].names}
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['text'][0:self.sample_size])
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x), len(self.extended_labels)) for x in self.dataset['text'][0:self.sample_size])]
+            trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['text'][0:self.sample_size])]
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
         self.tokenizer = Tokenizer(self.config)

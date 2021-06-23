@@ -75,13 +75,15 @@ class YahooAnswers14NLI(Dataset):
 
         self.num_labels = len(set(self.dataset['topic']))
 
+        trim_length = config['max_text_length'] - config['prepend_topic']
+
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['yahoo_remapping'] else
                                 config['prepend_topic'] + config['yahoo_remapping'][i.lower()] for i in self.dataset.features['topic'].names}
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['best_answer'][0:sample_size])
 
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x), len(self.extended_labels)) for x in self.dataset['best_answer'][0:self.sample_size])]
+            trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['best_answer'][0:self.sample_size])]
         self.new_labels = self.dataset['topic'][0:self.sample_size]
 
         self.tokenizer = Tokenizer(self.config)

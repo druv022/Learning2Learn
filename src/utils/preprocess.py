@@ -17,10 +17,10 @@ class Tokenizer:
         return encodings
 
 
-def trim_text(text):
+def trim_text(text, trim_length):
     text_arr = text.split(" ")
-    if(len(text_arr) > 230):
-        text_arr = text_arr[:230]
+    if(len(text_arr) > trim_length):
+        text_arr = text_arr[:trim_length]
         st = ''
         for word in text_arr:
             st = st+word+' '
