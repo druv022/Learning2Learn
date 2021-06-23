@@ -75,10 +75,12 @@ class AGNewsNLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
-        trim_length = config['max_text_length'] - len(config['prepend_topic'])
-
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['agnews_remapping'] else
                                 config['prepend_topic'] + config['agnews_remapping'][i.lower()] for i in self.dataset.features['label'].names}
+
+        max_extended_length = max([len(i) for i in self.extended_labels.values()])
+        trim_length = config['max_text_length'] - max_extended_length
+
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['text'][0:self.sample_size])
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
