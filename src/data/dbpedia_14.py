@@ -75,7 +75,7 @@ class DBPedai14NLI(Dataset):
 
         self.num_labels = len(set(self.dataset['label']))
 
-        trim_length = config['max_text_length'] - config['prepend_topic']
+        trim_length = config['max_text_length'] - len(config['prepend_topic'])
 
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['dbpedia_remapping'] else
                                 config['prepend_topic'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
