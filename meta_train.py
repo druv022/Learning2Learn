@@ -41,7 +41,7 @@ def meta_train(config, model, device=torch.device("cpu")):
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = dataset_dic[sample_task_name](config, split='train')
+        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['sample_size'])
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
         for attention, input_id, token_id, label in tqdm(train_loader):
@@ -61,11 +61,11 @@ def meta_train(config, model, device=torch.device("cpu")):
             data_loss = data_loss + model_loss.item()
             if (steps > 0 and steps % config["loss_plot_step"] == 0):
                 print(data_loss / config["loss_plot_step"])
-                writer.add_scalar(f'loss/task'+str(sample_task), data_loss /
-                                  config["loss_plot_step"], task_steps[sample_task])
+                writer.add_scalar(f'loss/task'+sample_task_name, data_loss /
+                                  config["loss_plot_step"], task_steps[sample_task_index])
                 data_loss = 0
             steps = steps + 1
-            task_steps[sample_task] = task_steps[sample_task]+1
+            task_steps[sample_task_index] = task_steps[sample_task_index]+1
         weights_after = model.state_dict()
         outerstepsize = outerstepsize0 * \
             (1 - iteration / niterations)  # linear schedule
