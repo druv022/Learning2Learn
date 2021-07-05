@@ -87,7 +87,7 @@ class YelpReview14NLI(Dataset):
             trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['text'][0:self.sample_size])]
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
-        self.tokenizer = Tokenizer(self.config)
+        self.tokenizer = Tokenizer(self.config, config['max_text_length']['yelp_review'])
 
     def __len__(self):
         return self.sample_size
