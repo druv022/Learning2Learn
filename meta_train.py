@@ -8,8 +8,10 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, get_linear_schedule_with_warmup
 from src.model.bertclassifier import BertClassification
-from src.data.GoEmotions import GoEmotionsDataset as Dataset
-from src.utils.preprocess import tokenize
+from src.data.agnews import AGNewsNLI
+from src.data.dbpedia_14 import DBPedai14NLI
+from src.data.yahoo_answers import YahooAnswers14NLI
+from src.data.yelp_review import YelpReview14NLI
 from test import test
 import torch.optim as optim
 import torch.nn as nn
@@ -18,6 +20,7 @@ from copy import deepcopy
 from meta_test import meta_test_train
 from sklearn.utils import shuffle
 
+dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnswers14NLI,'yelp_review':YelpReview14NLI}
 
 def meta_train(config, model, device=torch.device("cpu")):
     writer = SummaryWriter()
@@ -28,8 +31,9 @@ def meta_train(config, model, device=torch.device("cpu")):
     total_steps = 0
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
-        sample_task = random.randint(1, 4)
-        print("Sampled Task", sample_task)
+        sample_task_index = random.randint(0, 2)
+        sample_task_name=config['train_meta_dataset']
+        print("Sampled Task", config['train_meta_dataset'])
         optimizer_ft = optim.SGD([
             {'params': model.bert.parameters()},
             {'params': model.classifier.parameters(), 'lr': 2e-2}
@@ -37,8 +41,7 @@ def meta_train(config, model, device=torch.device("cpu")):
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = Dataset(config, split='train')
-        train_dataset.set_dataset(task=sample_task)
+        train_dataset = dataset_dic[sample_task_name](config, split='train')
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
         for attention, input_id, token_id, label in tqdm(train_loader):
