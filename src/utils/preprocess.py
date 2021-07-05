@@ -3,17 +3,18 @@ from transformers import BertTokenizerFast
 
 class Tokenizer:
 
-    def __init__(self, config) -> None:
+    def __init__(self, config,max_length) -> None:
         self.config = config
         self.tokenizer = BertTokenizerFast.from_pretrained(config["modelname"])
+        self.max_length=max_length
 
     def tokenize(self, texts, label_text=None):
         if label_text:
             encodings = self.tokenizer(
-                texts, label_text, truncation=self.config["truncation"], padding=self.config["padding"], max_length=256)
+                texts, label_text, truncation=self.config["truncation"], padding=self.config["padding"], max_length=self.max_length)
         else:
             encodings = self.tokenizer(
-                texts, truncation=self.config["truncation"], padding=self.config["padding"], max_length=256)
+                texts, truncation=self.config["truncation"], padding=self.config["padding"], max_length=self.max_length)
         return encodings
 
 
