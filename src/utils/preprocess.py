@@ -16,7 +16,6 @@ class Tokenizer:
         else:
             encodings = self.tokenizer(
                 texts, truncation=self.config["truncation"], padding=self.config["padding"], max_length=self.max_length)
-        print(encodings[0].shape)
         return encodings
 
 
