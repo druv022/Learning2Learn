@@ -48,10 +48,10 @@ task_mapping: {1: [9, 17, 22, 4, 18], 2: [11, 2, 14, 7, 6], 3: [23, 5, 21, 3, 24
 # Topic
 #-------------------------------------
 prepend_topic: 'This text is about '
-prepend_review: 'All in all, it was '
+prepend_review: 'In summary, the restaurant is '
 
 # Datasets:
-dataset_name: 'yahoo_ans' # use key to select dataset,
+dataset_name: 'yelp_review' # use key to select dataset,
 
 #--------------------------------------
 # AG NEWS (key: ag_news)
@@ -82,4 +82,4 @@ yahoo_remapping: {'Society & Culture':'Society','Science & Mathematics':'Science
 # Yelp review (key: yelp_review)
 #--------------------------------------
 yelp_cache_dir: 'src/resources/yelp_review'
-yelp_remapping: {'0':'terrible','1':'bad','2':'okay','3':'good','4':'great'}
+yelp_remapping: {'1 star':'terrible','2 star':'bad','3 stars':'okay','4 stars':'good','5 stars':'great'}
