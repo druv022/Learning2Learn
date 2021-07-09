@@ -9,7 +9,6 @@ class Tokenizer:
         self.max_length=max_length
 
     def tokenize(self, texts, label_text=None):
-        print("Max lenght",self.max_length)
         if label_text:
             encodings = self.tokenizer(
                 texts, label_text, truncation=self.config["truncation"], padding=self.config["padding"], max_length=self.max_length)
