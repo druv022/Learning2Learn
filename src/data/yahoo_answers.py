@@ -76,6 +76,14 @@ class YahooAnswers14NLI(Dataset):
         self.num_labels = len(set(self.dataset['topic']))
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['yahoo_remapping'] else
                                 config['prepend_topic'] + config['yahoo_remapping'][i.lower()] for i in self.dataset.features['topic'].names}
+        self.extended_labels={}
+        for i in self.dataset.features['topic'].names:
+            str=config['prepend_topic']
+            if(i in config['yahoo_remapping']):
+                str=str+config['yahoo_remapping'][i]
+            else:
+                str = str+[i]
+            self.extended_labels[i]=str
 
         trim_length = config['max_text_length']['yahoo_ans'] - 20
 
