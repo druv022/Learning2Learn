@@ -51,7 +51,7 @@ prepend_topic: 'This text is about '
 prepend_review: 'All in all, it was '
 
 # Datasets:
-dataset_name: 'ag_news' # use key to select dataset,
+dataset_name: 'yahoo_ans' # use key to select dataset,
 
 #--------------------------------------
 # AG NEWS (key: ag_news)
