@@ -48,7 +48,7 @@ task_mapping: {1: [9, 17, 22, 4, 18], 2: [11, 2, 14, 7, 6], 3: [23, 5, 21, 3, 24
 # Topic
 #-------------------------------------
 prepend_topic: 'This text is about '
-prepend_review: 'In summary, the restaurant is '
+prepend_review: 'All in all, it was '
 
 # Datasets:
 dataset_name: 'yelp_review' # use key to select dataset,
