@@ -40,9 +40,9 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
     data_loss = 0
     best_acc = 0
     best_model = model
+    model.train()
     while (steps < training_steps):
         for attention, input_id, token_id, label in tqdm(train_loader):
-            model.train()
             if (torch.cuda.is_available()):
                 attention = attention.cuda()
                 input_id = input_id.cuda()
