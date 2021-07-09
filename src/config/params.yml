@@ -3,7 +3,7 @@ data: "src/resources/emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00003
-batch_size: 32
+batch_size: 16
 loss_plot_step: 15
 loss_plot_test_step: 12
 acc_plot_step: 35
