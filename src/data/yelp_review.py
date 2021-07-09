@@ -85,7 +85,7 @@ class YelpReview14NLI(Dataset):
             else:
                 str = str + i
             self.extended_labels[i] = str
-        print(self.extended_labels)
+        ##print(self.extended_labels)
         trim_length = config['max_text_length']['yelp_review'] - 20
 
         self.label_text = list(
