@@ -26,7 +26,7 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"], collate_fn=pad_input)
 
     optim1 = AdamW(
-        model.parameters(), lr=1e-5, correct_bias=False)
+        model.parameters(), lr=3e-5, correct_bias=False)
     optimizer_ft = optim1
     # weights=torch.FloatTensor([0.3,1]).cuda()
     loss = nn.CrossEntropyLoss()

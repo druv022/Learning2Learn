@@ -2,7 +2,7 @@
 data: "src/resources/emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
-lr: 0.00005
+lr: 0.00003
 batch_size: 32
 loss_plot_step: 15
 loss_plot_test_step: 12
@@ -51,7 +51,7 @@ prepend_topic: 'This text is about '
 prepend_review: 'All in all, it was '
 
 # Datasets:
-dataset_name: 'yelp_review' # use key to select dataset,
+dataset_name: 'yahoo_ans' # use key to select dataset,
 
 #--------------------------------------
 # AG NEWS (key: ag_news)
