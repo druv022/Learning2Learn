@@ -66,6 +66,7 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
                 writer.add_scalar("validation_accuracy", acc, steps)
                 writer.add_text(
                     "validation_classification_report", str(report), steps)
+                model.train()
 
                 if best_acc < acc:
                     best_model = model
