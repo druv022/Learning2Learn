@@ -26,7 +26,7 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
                               num_workers=config["num_workers"], pin_memory=config["pin_memory"], collate_fn=pad_input)
 
     optim1 = AdamW(
-        model.parameters(), lr=1e-5, correct_bias=False)
+        model.parameters(), lr=2e-5, correct_bias=False)
     optimizer_ft = optim1
     # weights=torch.FloatTensor([0.3,1]).cuda()
     loss = nn.CrossEntropyLoss()
@@ -72,7 +72,7 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
                     best_model = model
 
             steps = steps+1
-
+    test_model(config,model,writer,test_dataset,device)
     time.sleep(100)
     return best_model
 
@@ -123,6 +123,7 @@ def main(args):
     num_labels = train_dataset.num_labels
 
     model = BertClassification(config, num_labels=num_labels)
+    model=nn.DataParallel(model)
     model.to(device)
 
     model = train(config, writer, model, train_dataset,

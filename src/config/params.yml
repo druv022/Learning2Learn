@@ -18,7 +18,7 @@ train_meta_dataset: ['ag_news','dbpedia_14','yahoo_ans']
 test_meta_dataset: ['yelp_review']
 
 # Validation & test
-val_step: 4000
+val_step: 2000
 
 test_num_samples: -1 # Change this if necessary
 
