@@ -57,10 +57,10 @@ class YahooAnswers14NLI(Dataset):
 
         if split == 'train':
             self.dataset = load_dataset(
-                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:95%]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:98%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[95%:]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[98%:]')
         elif split == 'test':
             self.dataset = load_dataset(
                 'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='test')
