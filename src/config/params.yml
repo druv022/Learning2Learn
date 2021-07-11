@@ -53,6 +53,7 @@ prepend_review: 'All in all, it was '
 # Datasets:
 dataset_name: 'yahoo_ans' # use key to select dataset,
 
+# NOTE: The keys should be all lowercase whereas values can be any string.
 #--------------------------------------
 # AG NEWS (key: ag_news)
 #--------------------------------------
@@ -74,9 +75,9 @@ dbpedia_remapping: {"educationalinstitution": "educational institution",
 # Yahoo (key: yahoo_ans)
 #--------------------------------------
 yahoo_cache_dir: 'src/resources/yahoo_ans'
-yahoo_remapping: {'Society & Culture':'Society','Science & Mathematics':'Science','Health':'Health','Education & Reference':'Education'
-,'Computers & Internet':'Computer','Sports':'Sport','Business & Finance':'Business','Entertainment & Music':'Entertainment',
-'Family & Relationships':'Relationship','Politics & Government':'Politics'}
+yahoo_remapping: {'society & culture':'Society','science & mathematics':'Science','health':'Health','education & reference':'Education'
+,'computers & internet':'Computer','sports':'Sport','business & finance':'Business','entertainment & music':'Entertainment',
+'family & relationships':'Relationship','politics & government':'Politics'}
 
 #--------------------------------------
 # Yelp review (key: yelp_review)
