@@ -79,7 +79,7 @@ class DBPedai14NLI(Dataset):
                                 config['prepend_topic'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
 
 
-        trim_length = config['max_text_length'] - max_extended_length
+        trim_length = config['max_text_length'] - 30
 
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['content'][0:self.sample_size])
