@@ -72,7 +72,6 @@ def train(config, writer, model, train_dataset, val_dataset, test_dataset=None, 
                     best_model = model
 
             steps = steps+1
-    test_model(config,model,writer,test_dataset,device)
     time.sleep(100)
     return best_model
 
@@ -131,6 +130,7 @@ def main(args):
 
     # test separately after saving the model
     test_model(config, model, writer, test_dataset, device=device)
+    time.sleep(100)
 
 
 if __name__ == "__main__":
