@@ -79,7 +79,7 @@ class DBPedai14NLI(Dataset):
                                 config['prepend_topic'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
 
 
-        trim_length = config['max_text_length'] - 30
+        trim_length = config['max_text_length']['dbpedia_14'] - 30
 
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['content'][0:self.sample_size])
@@ -88,7 +88,7 @@ class DBPedai14NLI(Dataset):
             trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['content'][0:self.sample_size])]
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
-        self.tokenizer = Tokenizer(self.config)
+        self.tokenizer = Tokenizer(self.config,config['max_text_length']['dbpedia_14'])
 
     def __len__(self):
         return self.sample_size
