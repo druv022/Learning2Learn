@@ -3,7 +3,7 @@ data: "src/resources/emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00003
-batch_size: 16
+batch_size: 1
 loss_plot_step: 15
 loss_plot_test_step: 12
 acc_plot_step: 35
@@ -65,11 +65,11 @@ agnews_remapping: {'sci/tech': 'science or technology'}
 # DBPedia 14 (key: dbpedia_14)
 #--------------------------------------
 dbpedia_cache_dir: 'src/resources/dbpedia_14'
-dbpedia_remapping: {"educationalinstitution": "institution",
+dbpedia_remapping: {"educationalinstitution": "education",
             "officeholder": "office",
             "meanoftransportation": "transportation",
-            "naturalplace": "nature",
-            "written work": "work"}
+            "naturalplace": "place",
+            "writtenwork": "work"}
 
 #--------------------------------------
 # Yahoo (key: yahoo_ans)
