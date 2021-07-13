@@ -70,7 +70,8 @@ class DBPedai14NLI(Dataset):
             print('Please pass an instance of DBPedia14_shuffled object')
 
         if split == 'train':
-            self.dataset = dataset['train']
+            self.dataset = load_dataset(
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train')
         elif split == 'val':
             self.dataset = dataset['test'] # Val set
         elif split == 'test':
