@@ -84,7 +84,7 @@ def meta_train(config, model, device=torch.device("cpu")):
                                for name in weights_before})
         if (iteration > 0 and iteration % config["acc_plot_step"] == 0):
             meta_test_train(config, model, writer, iteration,
-                            niterations, task_steps, device)
+                            niterations, task_steps,dataset_data ,device)
 
 
 if __name__ == "__main__":

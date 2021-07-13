@@ -17,13 +17,16 @@ from src.data.utils import pad_input
 dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnswers14NLI,'yelp_review':YelpReview14NLI}
 
 
-def test_meta_data(model, config, device,writer,task_steps,type):
+def test_meta_data(model, config, device,writer,task_steps,type,dataset_data):
     model.eval()
     pred_labels = []
     target_labels = []
     print("Begin testing")
     sample_task_name = config['test_meta_dataset']
-    test_dataset = dataset_dic[sample_task_name](config, split='test', sample_size=config['test_num_samples'])
+    if(sample_task_name+'test' not in dataset_data):
+        test_dataset = dataset_dic[sample_task_name](config, split='test', sample_size=config['test_num_samples'])
+        dataset_data[sample_task_name+'test']=test_dataset
+    test_dataset=dataset_data[sample_task_name+'test']
     test_test_loader= DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"],
                                   collate_fn=pad_input)
@@ -45,8 +48,8 @@ def test_meta_data(model, config, device,writer,task_steps,type):
     writer.add_text('report' + sample_task_name+' '+type,
                     report, task_steps[3])
 
-def meta_test_train(config, model, writer, iteration, niterations, task_steps, device=torch.device("cpu")):
-    test_meta_data(model,config,device,writer,task_steps,'zero')
+def meta_test_train(config, model, writer, iteration, niterations, task_steps, dataset_data,device=torch.device("cpu")):
+    test_meta_data(model,config,device,writer,task_steps,'zero',dataset_data)
     model.train()
     loss = nn.CrossEntropyLoss()
     outerstepsize0 = 0.1
@@ -62,7 +65,10 @@ def meta_test_train(config, model, writer, iteration, niterations, task_steps, d
     steps = 0
     model.train()
     data_loss = 0
-    train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
+    if(sample_task_name+'train' not in dataset_data):
+        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
+        dataset_data[sample_task_name+'train']=train_dataset
+    train_dataset=dataset_data[sample_task_name+'train']
     test_train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"],
                                   collate_fn=pad_input)
@@ -95,6 +101,6 @@ def meta_test_train(config, model, writer, iteration, niterations, task_steps, d
                            weights_before[name] + (weights_after[name] -
                                                    weights_before[name]) * outerstepsize
                            for name in weights_before})
-    test_meta_data(model, config, device,writer,task_steps,'trained')
+    test_meta_data(model, config, device,writer,task_steps,'trained',dataset_data)
     model.train()
     print("Testing Done")
