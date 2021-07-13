@@ -97,6 +97,7 @@ if __name__ == "__main__":
     num_labels = 5
     # build model
     model = BertClassification(config, num_labels=num_labels)
+    model = nn.DataParallel(model)
     model.to(device)
     # train
     meta_train(config, model, device)
