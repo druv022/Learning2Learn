@@ -13,7 +13,7 @@ shuffle: true
 num_workers: 4
 pin_memory: true
 train_num_samples: -1 # set to -1 for all datapoints, otherwise specify a number
-max_text_length: {'ag_news':64,'dbpedia_14':128,'yahoo_ans':64,'yelp_review':128}
+max_text_length: {'ag_news':64,'dbpedia_14':128,'yahoo_ans':128,'yelp_review':128}
 train_meta_dataset: ['ag_news','dbpedia_14','yahoo_ans']
 test_meta_dataset: ['yelp_review']
 
@@ -51,7 +51,7 @@ prepend_topic: 'This text is about '
 prepend_review: 'All in all, it was '
 
 # Datasets:
-dataset_name: 'dbpedia_14' # use key to select dataset
+dataset_name: 'yahoo_ans' # use key to select dataset
 
 # NOTE: The keys should be all lowercase whereas values can be any string.
 #--------------------------------------

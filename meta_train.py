@@ -27,7 +27,10 @@ def meta_train(config, model, device=torch.device("cpu")):
     loss = nn.CrossEntropyLoss()
     outerstepsize0 = 0.1
     niterations = 50000
-    task_steps = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+    total_tasks=len(config['max_text_length'])
+    task_steps={}
+    for i in range(0,task_steps):
+        task_steps[i]=0
     total_steps = 0
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
