@@ -14,7 +14,7 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 
 from src.model.bertclassifier import BertClassification
 from src.data.agnews import AGNewsNLI
-from src.data.dbpedia_14 import DBPedai14NLI
+from src.data.dbpedia_14 import DBPedai14NLI, DBPedia14_shuffled
 from src.data.yahoo_answers import YahooAnswers14NLI
 from src.data.yelp_review import YelpReview14NLI
 from test import test
@@ -89,9 +89,11 @@ def get_dataset(config, name, sample_size):
         val_dataset = AGNewsNLI(config, split='val', sample_size=config['test_num_samples'])
         test_dataset = AGNewsNLI(config, split='test', sample_size=config['test_num_samples'])
     elif name == 'dbpedia_14':
+        dataset = DBPedia14_shuffled(config)
+        shuffled_dataset = dataset.shuffle(val_split=0.2)
         train_dataset = DBPedai14NLI(
-            config, split='train', sample_size=sample_size)
-        val_dataset = DBPedai14NLI(config, split='val', sample_size=config['test_num_samples'])
+            config, dataset=shuffled_dataset, split='train', sample_size=sample_size)
+        val_dataset = DBPedai14NLI(config, dataset=shuffled_dataset, split='val', sample_size=config['test_num_samples'])
         test_dataset = DBPedai14NLI(config, split='test', sample_size=config['test_num_samples'])
     elif name == 'yahoo_ans':
         train_dataset = YahooAnswers14NLI(

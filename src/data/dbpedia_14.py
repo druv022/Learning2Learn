@@ -52,18 +52,27 @@ class DBPedia14(Dataset):
         label = torch.tensor(label, dtype=torch.long)
         return attention, ids, type_ids, label
 
+class DBPedia14_shuffled():
+    def __init__(self, config, ):
+        self.dataset = load_dataset(
+                'dbpedia_14', cache_dir=config['dbpedia_cache_dir'], split='train')
+
+    def shuffle(self, val_split=0.2):
+        return self.dataset.train_test_split(val_split, 1-val_split, shuffle=True)
+
 
 class DBPedai14NLI(Dataset):
-    def __init__(self, config, split='train', sample_size=-1):
+    def __init__(self, config, dataset=None, split='train', sample_size=-1):
         self.split = split
         self.config = config
 
+        if dataset is None and split in ['train', 'val']:
+            print('Please pass an instance of DBPedia14_shuffled object')
+
         if split == 'train':
-            self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'],split='train')
+            self.dataset = dataset['train']
         elif split == 'val':
-            self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
+            self.dataset = dataset['test'] # Val set
         elif split == 'test':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
