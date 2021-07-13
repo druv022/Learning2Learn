@@ -82,7 +82,8 @@ class YahooAnswers14NLI(Dataset):
             self.extended_labels.values()) * len(self.dataset['best_answer'][0:sample_size])
 
         self.new_text = [i for i in itertools.chain.from_iterable(itertools.repeat(
-            trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['best_answer'][0:self.sample_size])]
+            trim_text(x, trim_length), len(self.extended_labels)) for x in [a+' '+b+ '\n' +c for a, b, c in  
+            zip(self.dataset['question_title'][0:self.sample_size], self.dataset['question_content'][0:self.sample_size], self.dataset['best_answer'][0:self.sample_size])])]
         self.new_labels = self.dataset['topic'][0:self.sample_size]
 
         self.tokenizer = Tokenizer(self.config,config['max_text_length']['yahoo_ans'])

@@ -51,7 +51,7 @@ prepend_topic: 'This text is about '
 prepend_review: 'All in all, it was '
 
 # Datasets:
-dataset_name: 'dbpedia_14' # use key to select dataset
+dataset_name: 'yahoo_ans' # use key to select dataset
 
 # NOTE: The keys should be all lowercase whereas values can be any string.
 #--------------------------------------
