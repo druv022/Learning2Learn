@@ -8,6 +8,9 @@ from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
 from src.utils.preprocess import Tokenizer, trim_text
+from sklearn.utils import shuffle
+import random
+random.seed(42)
 
 
 class DBPedia14(Dataset):
@@ -15,10 +18,10 @@ class DBPedia14(Dataset):
         self.config = config
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[:80%]')
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'])
         elif split == 'val':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[80%:100%]')
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
         elif split == 'test':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')

@@ -65,11 +65,11 @@ agnews_remapping: {'sci/tech': 'science or technology'}
 # DBPedia 14 (key: dbpedia_14)
 #--------------------------------------
 dbpedia_cache_dir: 'src/resources/dbpedia_14'
-dbpedia_remapping: {"educationalinstitution": "education",
-            "officeholder": "office",
+dbpedia_remapping: {"educationalinstitution": "university",
+            "officeholder": "officer",
             "meanoftransportation": "transportation",
-            "naturalplace": "place",
-            "writtenwork": "work"}
+            "naturalplace": "landscape",
+            "writtenwork": "book"}
 
 #--------------------------------------
 # Yahoo (key: yahoo_ans)
