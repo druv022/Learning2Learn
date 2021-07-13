@@ -8,6 +8,9 @@ from torch.utils.data import Dataset
 import torch
 from tqdm import tqdm
 from src.utils.preprocess import Tokenizer, trim_text
+from sklearn.utils import shuffle
+import random
+random.seed(42)
 
 
 class DBPedia14(Dataset):
@@ -15,10 +18,10 @@ class DBPedia14(Dataset):
         self.config = config
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[:80%]')
-        elif split == 'val':
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'])
+        if split == 'val':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[80%:100%]')
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
         elif split == 'test':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
@@ -57,10 +60,10 @@ class DBPedai14NLI(Dataset):
 
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[:90%]')
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'],split='train')
         elif split == 'val':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='train[90%:]')
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
         elif split == 'test':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
@@ -79,7 +82,7 @@ class DBPedai14NLI(Dataset):
                                 config['prepend_topic'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
 
 
-        trim_length = config['max_text_length'] - max_extended_length
+        trim_length = config['max_text_length']['dbpedia_14'] - 30
 
         self.label_text = list(
             self.extended_labels.values()) * len(self.dataset['content'][0:self.sample_size])
@@ -88,7 +91,7 @@ class DBPedai14NLI(Dataset):
             trim_text(x, trim_length), len(self.extended_labels)) for x in self.dataset['content'][0:self.sample_size])]
         self.new_labels = self.dataset['label'][0:self.sample_size]
 
-        self.tokenizer = Tokenizer(self.config)
+        self.tokenizer = Tokenizer(self.config,config['max_text_length']['dbpedia_14'])
 
     def __len__(self):
         return self.sample_size

@@ -7,7 +7,7 @@ from src.data.utils import pad_input
 
 def test(config, model, test_dataset, device=torch.device("cuda")):
     model.eval()
-    test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False,
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,
                              num_workers=config["num_workers"], pin_memory=config["pin_memory"], collate_fn=pad_input)
 
     pred_labels = []

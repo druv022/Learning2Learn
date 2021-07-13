@@ -3,7 +3,7 @@ data: "src/resources/emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00003
-batch_size: 8
+batch_size: 16
 loss_plot_step: 15
 loss_plot_test_step: 12
 acc_plot_step: 35
@@ -12,8 +12,8 @@ split: 0.2
 shuffle: true
 num_workers: 4
 pin_memory: true
-train_num_samples: 100000 # set to -1 for all datapoints, otherwise specify a number
-max_text_length: {'ag_news':128,'dbpedia_14':128,'yahoo_ans':128,'yelp_review':128}
+train_num_samples: -1 # set to -1 for all datapoints, otherwise specify a number
+max_text_length: {'ag_news':64,'dbpedia_14':128,'yahoo_ans':64,'yelp_review':128}
 train_meta_dataset: ['ag_news','dbpedia_14','yahoo_ans']
 test_meta_dataset: ['yelp_review']
 
@@ -51,7 +51,7 @@ prepend_topic: 'This text is about '
 prepend_review: 'All in all, it was '
 
 # Datasets:
-dataset_name: 'yahoo_ans' # use key to select dataset,
+dataset_name: 'dbpedia_14' # use key to select dataset
 
 # NOTE: The keys should be all lowercase whereas values can be any string.
 #--------------------------------------
@@ -65,11 +65,11 @@ agnews_remapping: {'sci/tech': 'science or technology'}
 # DBPedia 14 (key: dbpedia_14)
 #--------------------------------------
 dbpedia_cache_dir: 'src/resources/dbpedia_14'
-dbpedia_remapping: {"educationalinstitution": "educational institution",
-            "officeholder": "office holder",
-            "meanoftransportation": "mean of transportation",
-            "naturalplace": "natural place",
-            "written work": "written work"}
+dbpedia_remapping: {"educationalinstitution": "university",
+            "officeholder": "officer",
+            "meanoftransportation": "transportation",
+            "naturalplace": "landscape",
+            "writtenwork": "book"}
 
 #--------------------------------------
 # Yahoo (key: yahoo_ans)

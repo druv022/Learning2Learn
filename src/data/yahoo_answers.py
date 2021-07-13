@@ -57,10 +57,10 @@ class YahooAnswers14NLI(Dataset):
 
         if split == 'train':
             self.dataset = load_dataset(
-                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:95%]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[:98%]')
         elif split == 'val':
             self.dataset = load_dataset(
-                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[95%:]')
+                'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='train[98%:]')
         elif split == 'test':
             self.dataset = load_dataset(
                 'yahoo_answers_topics', cache_dir=self.config['yahoo_cache_dir'], split='test')
@@ -76,7 +76,6 @@ class YahooAnswers14NLI(Dataset):
         self.num_labels = len(set(self.dataset['topic']))
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['yahoo_remapping'] else
                                 config['prepend_topic'] + config['yahoo_remapping'][i.lower()] for i in self.dataset.features['topic'].names}
-
         trim_length = config['max_text_length']['yahoo_ans'] - 20
 
         self.label_text = list(
