@@ -37,7 +37,7 @@ def meta_train(config, model, device=torch.device("cpu")):
         weights_before = deepcopy(model.state_dict())
         sample_task_index = random.randint(0, 2)
         sample_task_name=config['train_meta_dataset'][sample_task_index]
-        print("Sampled Task", config['train_meta_dataset'])
+        ##print("Sampled Task", config['train_meta_dataset'])
         optimizer_ft = optim.SGD([
             {'params': model.module.bert.parameters()},
             {'params': model.module.pre_score_layer.parameters(), 'lr': 2e-2},
