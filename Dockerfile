@@ -9,4 +9,4 @@ ENV NVIDIA_VISIBLE_DEVICES=all
 
 
 ENTRYPOINT ["python3"]
-CMD ["-u","train.py"]
+CMD ["-u","meta_train.py"]
