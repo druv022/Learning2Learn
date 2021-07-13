@@ -20,7 +20,7 @@ test_meta_dataset: 'dbpedia_14'
 # Validation & test
 val_step: 4000
 
-test_num_samples: -1 # Change this if necessary
+test_num_samples: 10000 # Change this if necessary
 
 # tokenizer
 padding: true
