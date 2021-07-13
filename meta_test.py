@@ -55,9 +55,9 @@ def meta_test_train(config, model, writer, iteration, niterations, task_steps, d
     print("Sampled TaSK Test", sample_task_name)
 
     optimizer_ft = optim.SGD([
-        {'params': model.bert.parameters()},
-        {'params': model.pre_score_layer.parameters(), 'lr': 2e-2},
-        {'params': model.score_layer.parameters(), 'lr': 2e-2}
+        {'params': model.module.bert.parameters()},
+        {'params': model.module.pre_score_layer.parameters(), 'lr': 2e-2},
+        {'params': model.module.score_layer.parameters(), 'lr': 2e-2}
     ], lr=1e-5)
     steps = 0
     model.train()
