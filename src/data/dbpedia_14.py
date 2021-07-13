@@ -19,7 +19,7 @@ class DBPedia14(Dataset):
         if split == 'train':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'])
-        elif split == 'val':
+        if split == 'val':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
         elif split == 'test':
@@ -57,9 +57,10 @@ class DBPedai14NLI(Dataset):
     def __init__(self, config, split='train', sample_size=-1):
         self.split = split
         self.config = config
+
         if split == 'train':
             self.dataset = load_dataset(
-                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'])
+                'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'],split='train')
         elif split == 'val':
             self.dataset = load_dataset(
                 'dbpedia_14', cache_dir=self.config['dbpedia_cache_dir'], split='test')
