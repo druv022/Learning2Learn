@@ -12,6 +12,7 @@ from src.data.agnews import AGNewsNLI
 from src.data.dbpedia_14 import DBPedai14NLI
 from src.data.yahoo_answers import YahooAnswers14NLI
 from src.data.yelp_review import YelpReview14NLI
+from src.data.utils import pad_input
 
 dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnswers14NLI,'yelp_review':YelpReview14NLI}
 
@@ -22,9 +23,10 @@ def test_meta_data(model, config, device,writer,task_steps,type):
     target_labels = []
     print("Begin testing")
     sample_task_name = config['test_meta_dataset']
-    train_dataset = dataset_dic[sample_task_name](config, split='test', sample_size=config['test_num_samples'])
-    test_test_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
-                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
+    test_dataset = dataset_dic[sample_task_name](config, split='test', sample_size=config['test_num_samples'])
+    test_test_loader= DataLoader(test_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
+                                  num_workers=config["num_workers"], pin_memory=config["pin_memory"],
+                                  collate_fn=pad_input)
     for attention, ids, type_ids, label in tqdm(test_test_loader):
         input_ids = ids.to(device)
         attention_mask = attention.to(device)
@@ -62,7 +64,8 @@ def meta_test_train(config, model, writer, iteration, niterations, task_steps, d
     data_loss = 0
     train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
     test_train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
-                              num_workers=config["num_workers"], pin_memory=config["pin_memory"])
+                                  num_workers=config["num_workers"], pin_memory=config["pin_memory"],
+                                  collate_fn=pad_input)
     for attention, input_id, token_id, label in tqdm(test_train_loader):
         if (torch.cuda.is_available()):
             attention = attention.cuda()

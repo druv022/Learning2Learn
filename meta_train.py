@@ -18,6 +18,7 @@ import random
 from copy import deepcopy
 from meta_test import meta_test_train
 from sklearn.utils import shuffle
+from src.data.utils import pad_input
 
 dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnswers14NLI,'yelp_review':YelpReview14NLI}
 
@@ -44,9 +45,10 @@ def meta_train(config, model, device=torch.device("cpu")):
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
+        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=1000)
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
-                                  num_workers=config["num_workers"], pin_memory=config["pin_memory"])
+                                  num_workers=config["num_workers"], pin_memory=config["pin_memory"],
+                                  collate_fn=pad_input)
         for attention, input_id, token_id, label in tqdm(train_loader):
             if (torch.cuda.is_available()):
                 attention = attention.cuda()
