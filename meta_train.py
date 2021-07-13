@@ -25,6 +25,7 @@ dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnsw
 def meta_train(config, model, device=torch.device("cpu")):
     writer = SummaryWriter()
     loss = nn.CrossEntropyLoss()
+    dataset_data={}
     outerstepsize0 = 0.1
     niterations = 50000
     total_tasks=len(config['max_text_length'])
@@ -45,7 +46,10 @@ def meta_train(config, model, device=torch.device("cpu")):
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=1000)
+        if(sample_task_name not in dataset_data):
+            train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=1000)
+            dataset_data[sample_task_name]=train_dataset
+        train_dataset=dataset_data[sample_task_name]
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"],
                                   collate_fn=pad_input)
