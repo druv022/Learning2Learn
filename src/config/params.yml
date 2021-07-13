@@ -12,10 +12,10 @@ split: 0.2
 shuffle: true
 num_workers: 4
 pin_memory: true
-train_num_samples: -1 # set to -1 for all datapoints, otherwise specify a number
-max_text_length: {'ag_news':64,'dbpedia_14':128,'yahoo_ans':128,'yelp_review':128}
-train_meta_dataset: ['ag_news','dbpedia_14','yahoo_ans']
-test_meta_dataset: ['yelp_review']
+train_num_samples: 1000 # set to -1 for all datapoints, otherwise specify a number
+max_text_length: {'ag_news':128,'dbpedia_14':128,'yahoo_ans':128,'yelp_review':128}
+train_meta_dataset: ['ag_news','yelp_review','yahoo_ans']
+test_meta_dataset: ['dbpedia_14']
 
 # Validation & test
 val_step: 4000

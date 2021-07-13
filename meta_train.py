@@ -12,7 +12,6 @@ from src.data.agnews import AGNewsNLI
 from src.data.dbpedia_14 import DBPedai14NLI
 from src.data.yahoo_answers import YahooAnswers14NLI
 from src.data.yelp_review import YelpReview14NLI
-from test import test
 import torch.optim as optim
 import torch.nn as nn
 import random
@@ -29,22 +28,23 @@ def meta_train(config, model, device=torch.device("cpu")):
     niterations = 50000
     total_tasks=len(config['max_text_length'])
     task_steps={}
-    for i in range(0,task_steps):
+    for i in range(0,total_tasks):
         task_steps[i]=0
     total_steps = 0
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
         sample_task_index = random.randint(0, 2)
-        sample_task_name=config['train_meta_dataset']
+        sample_task_name=config['train_meta_dataset'][sample_task_index]
         print("Sampled Task", config['train_meta_dataset'])
         optimizer_ft = optim.SGD([
             {'params': model.bert.parameters()},
-            {'params': model.classifier.parameters(), 'lr': 2e-2}
+            {'params': model.pre_score_layer.parameters(), 'lr': 2e-2},
+            {'params': model.score_layer.parameters(), 'lr': 2e-2}
         ], lr=1e-5)
         steps = 0
         model.train()
         data_loss = 0
-        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['sample_size'])
+        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
                                   num_workers=config["num_workers"], pin_memory=config["pin_memory"])
         for attention, input_id, token_id, label in tqdm(train_loader):
