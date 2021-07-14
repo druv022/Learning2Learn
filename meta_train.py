@@ -29,21 +29,21 @@ def meta_train(config, model, device=torch.device("cpu")):
     dataset_data={}
     outerstepsize0 = 0.1
     niterations = 50000
+    task_sequence=np.random.randint(len(config['train_meta_dataset']), size=niterations)
     total_tasks=len(config['max_text_length'])
     task_steps={}
     for i in range(0,total_tasks):
         task_steps[i]=0
-    total_steps = 0
+    optimizer_ft = optim.SGD([
+        {'params': model.module.bert.parameters()},
+        {'params': model.module.pre_score_layer.parameters(), 'lr': 1e-2},
+        {'params': model.module.score_layer.parameters(), 'lr': 1e-2}
+    ], lr=2e-5)
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
-        sample_task_index = random.randint(0, len(config['train_meta_dataset'])-1)
+        sample_task_index = task_sequence[i]
         sample_task_name=config['train_meta_dataset'][sample_task_index]
         ##print("Sampled Task", config['train_meta_dataset'])
-        optimizer_ft = optim.SGD([
-            {'params': model.module.bert.parameters()},
-            {'params': model.module.pre_score_layer.parameters(), 'lr': 1e-2},
-            {'params': model.module.score_layer.parameters(), 'lr': 1e-2}
-        ], lr=2e-5)
         steps = 0
         model.train()
         data_loss = 0
