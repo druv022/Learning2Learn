@@ -58,15 +58,13 @@ def meta_test_train(config, model, writer, iteration, niterations, task_steps, d
     print("Sampled TaSK Test", sample_task_name)
 
     optimizer_ft = optim.SGD([
-        {'params': model.module.bert.parameters()},
-        {'params': model.module.pre_score_layer.parameters(), 'lr': 2e-2},
-        {'params': model.module.score_layer.parameters(), 'lr': 2e-2}
+        {'params': model.parameters()}
     ], lr=1e-5)
     steps = 0
     model.train()
     data_loss = 0
     if(sample_task_name+'train' not in dataset_data):
-        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
+        train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['test_train_samples'])
         dataset_data[sample_task_name+'train']=train_dataset
     train_dataset=dataset_data[sample_task_name+'train']
     test_train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
