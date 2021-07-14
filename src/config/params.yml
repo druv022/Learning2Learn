@@ -3,7 +3,7 @@ data: "src/resources/emotions/full_data.csv"
 # training
 modelname: "bert-base-uncased"
 lr: 0.00003
-batch_size: 16
+batch_size: 1
 loss_plot_step: 200
 loss_plot_test_step: 30
 acc_plot_step: 3
@@ -14,8 +14,8 @@ num_workers: 4
 pin_memory: true
 train_num_samples: 100000 # set to -1 for all datapoints, otherwise specify a number
 max_text_length: {'ag_news':128,'dbpedia_14':128,'yahoo_ans':128,'yelp_review':128}
-train_meta_dataset: ['ag_news','yelp_review','yahoo_ans']
-test_meta_dataset: 'dbpedia_14'
+train_meta_dataset: ['ag_news','dbpedia_14']
+test_meta_dataset: 'yelp_review'
 
 # Validation & test
 val_step: 4000

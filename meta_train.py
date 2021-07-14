@@ -36,7 +36,7 @@ def meta_train(config, model, device=torch.device("cpu")):
     total_steps = 0
     for iteration in range(0, niterations):
         weights_before = deepcopy(model.state_dict())
-        sample_task_index = random.randint(0, 2)
+        sample_task_index = random.randint(0, len(config['train_meta_dataset'])-1)
         sample_task_name=config['train_meta_dataset'][sample_task_index]
         ##print("Sampled Task", config['train_meta_dataset'])
         optimizer_ft = optim.SGD([
