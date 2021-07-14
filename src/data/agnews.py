@@ -74,7 +74,7 @@ class AGNewsNLI(Dataset):
             self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
 
         self.num_labels = len(set(self.dataset['label']))
-        self.dataset = self.dataset.shuffle(seed=42)
+        self.dataset = self.dataset.shuffle()
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['agnews_remapping'] else
                                 config['prepend_topic'] + config['agnews_remapping'][i.lower()] for i in self.dataset.features['label'].names}
 

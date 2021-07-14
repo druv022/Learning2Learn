@@ -91,7 +91,7 @@ class DBPedai14NLI(Dataset):
         self.extended_labels = {i: config['prepend_topic'] + i.lower() if i.lower() not in config['dbpedia_remapping'] else
                                 config['prepend_topic'] + config['dbpedia_remapping'][i.lower()] for i in self.dataset.features['label'].names}
 
-        self.dataset=self.dataset.shuffle(seed=42)
+        self.dataset=self.dataset.shuffle()
         trim_length = config['max_text_length']['dbpedia_14'] - 30
 
         self.label_text = list(

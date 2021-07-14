@@ -72,7 +72,7 @@ class YelpReview14NLI(Dataset):
             self.sample_size = len(self.dataset)
         else:
             self.sample_size = sample_size if len(self.dataset) > sample_size else len(self.dataset)
-        self.dataset = self.dataset.shuffle(seed=42)
+        self.dataset = self.dataset.shuffle()
         self.num_labels = len(set(self.dataset['label']))
 
         self.extended_labels = {i: config['prepend_review'] + i.lower() if i.lower() not in config['yelp_remapping'] else
