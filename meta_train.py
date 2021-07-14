@@ -19,6 +19,7 @@ from copy import deepcopy
 from meta_test import meta_test_train
 from sklearn.utils import shuffle
 from src.data.utils import pad_input
+import torch
 
 dataset_dic={'ag_news':AGNewsNLI,'dbpedia_14':DBPedai14NLI,'yahoo_ans':YahooAnswers14NLI,'yelp_review':YelpReview14NLI}
 
@@ -85,6 +86,7 @@ def meta_train(config, model, device=torch.device("cpu")):
         if (iteration > 0 and iteration % config["acc_plot_step"] == 0):
             meta_test_train(config, model, writer, iteration,
                             niterations, task_steps,dataset_data ,device)
+            torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":
