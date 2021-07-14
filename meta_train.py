@@ -46,7 +46,7 @@ def meta_train(config, model, device=torch.device("cpu")):
         model.train()
         data_loss = 0
         if(sample_task_name not in dataset_data):
-            train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=1000)
+            train_dataset = dataset_dic[sample_task_name](config, split='train', sample_size=config['train_num_samples'])
             dataset_data[sample_task_name]=train_dataset
         train_dataset=dataset_data[sample_task_name]
         train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=config["shuffle"],
